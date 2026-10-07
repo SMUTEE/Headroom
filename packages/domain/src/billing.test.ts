@@ -654,12 +654,9 @@ describe('projection is reproducible from what it shows', () => {
       asOf: new Date('2026-09-07T12:00:00Z'),
     });
 
-    // observed + rate x remaining must equal the projection, exactly.
-    const reproduced = Math.round(
-      p.observedUnits + p.dailyAverage * (daysInPeriod(PERIOD) - 6.5),
-    );
-    // Exact: the rate shown is the rate used.
-    expect(reproduced).toBe(p.projectedUnits);
+    // Everything shown must close: used + rate x days remaining.
+    expect(p.observedUnits + p.dailyAverage * p.daysRemaining).toBe(p.projectedUnits);
+    expect(p.daysElapsed + p.daysRemaining).toBe(daysInPeriod(PERIOD));
     expect(p.dailyAverage).toBeGreaterThan(0);
   });
 });
@@ -737,3 +734,31 @@ describe('compareInvoices', () => {
 function subtractTotals(a: number, b: number) {
   return a - b;
 }
+
+describe('every projected figure closes by hand', () => {
+  it('holds at every point in a period, for several usage shapes', () => {
+    // A reader checking `used + rate x daysRemaining` must land exactly on the
+    // published projection, on any day, for any plan.
+    for (const perDay of [0, 1, 997, 12_345]) {
+      for (const day of [1, 2, 7, 15, 28, 31]) {
+        const period = monthPeriod(new Date(Date.UTC(2026, 9, 1)));
+        const events = Array.from({ length: day }, (_, i) =>
+          usage(perDay, {
+            idempotencyKey: `k${i}`,
+            occurredAt: new Date(Date.UTC(2026, 9, i + 1, 3)).toISOString(),
+          }),
+        );
+        const p = projectInvoice({
+          account, plan: growth, usage: events, period,
+          asOf: new Date(Date.UTC(2026, 9, day, 12)),
+        });
+
+        expect(p.observedUnits + p.dailyAverage * p.daysRemaining).toBe(p.projectedUnits);
+        expect(p.daysElapsed + p.daysRemaining).toBe(daysInPeriod(period));
+        if (p.daysElapsed > 0) {
+          expect(p.dailyAverage).toBe(Math.round(p.observedUnits / p.daysElapsed));
+        }
+      }
+    }
+  });
+});

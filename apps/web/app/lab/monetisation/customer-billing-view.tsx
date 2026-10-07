@@ -1,5 +1,3 @@
-'use client';
-
 import { Callout, Card, CardHeader, Meter, Metric } from '@headroom/ui';
 import {
   type Account,
@@ -107,7 +105,7 @@ export function CustomerBillingView({
             <Metric
               label="On track for"
               value={projection.projectedUnits.toLocaleString()}
-              hint={`by day ${totalDays}`}
+              hint={`${projection.daysRemaining} days left`}
             />
           </div>
 
@@ -120,11 +118,11 @@ export function CustomerBillingView({
               tone="warning"
               title={`On track to go ${(projection.projectedUnits - plan.includedUnits).toLocaleString()} units over`}
             >
-              {`${projection.dailyAverage.toLocaleString()} units a day across ${totalDays} days comes to ${projection.projectedUnits.toLocaleString()}, against ${plan.includedUnits.toLocaleString()} included. Extra usage is billed at ${plan.overageRatePerUnit}c per unit.`}
+              {`${observed.totalUnits.toLocaleString()} used, plus ${projection.dailyAverage.toLocaleString()} a day for the ${projection.daysRemaining} days left, comes to ${projection.projectedUnits.toLocaleString()} against ${plan.includedUnits.toLocaleString()} included. Usage beyond that is billed at ${plan.overageRatePerUnit}c per unit.`}
             </Callout>
           ) : (
             <Callout tone="success" title="On track to stay within your allowance">
-              {`${projection.dailyAverage.toLocaleString()} units a day across ${totalDays} days comes to ${projection.projectedUnits.toLocaleString()}, against ${plan.includedUnits.toLocaleString()} included.`}
+              {`${observed.totalUnits.toLocaleString()} used, plus ${projection.dailyAverage.toLocaleString()} a day for the ${projection.daysRemaining} days left, comes to ${projection.projectedUnits.toLocaleString()} against ${plan.includedUnits.toLocaleString()} included.`}
             </Callout>
           )}
         </div>

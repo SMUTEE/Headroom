@@ -39,6 +39,16 @@ export {
 } from './components/controls';
 
 export {
+  AppShell,
+  AppShellMobileNav,
+  type AppShellProps,
+  type NavGroup,
+  type NavItem,
+} from './components/app-shell';
+
+export { Skeleton, SkeletonText, type SkeletonProps } from './components/skeleton';
+
+export {
   Badge,
   Meter,
   Table,

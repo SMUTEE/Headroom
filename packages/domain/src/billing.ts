@@ -363,8 +363,18 @@ export function projectInvoice(input: InvoiceInput & { asOf: Date }): InvoicePro
     Math.max(asOf.getTime() - period.start.getTime(), 0),
     period.end.getTime() - period.start.getTime(),
   );
-  const daysElapsed = elapsedMs / MS_PER_DAY;
-  const daysRemaining = Math.max(0, totalDays - daysElapsed);
+
+  // Every input to the projection is the value the interface will display.
+  //
+  // Days are rounded first, then the rate is derived from the rounded day
+  // count, then the projection is built from both. Mixing exact and rounded
+  // inputs — an exact rate against a displayed day count, or an exact elapsed
+  // time against a rounded one — leaves the published figure a few units away
+  // from anything a reader can reproduce by hand. On a surface whose entire
+  // job is making a bill checkable, reproducibility beats the fraction of a
+  // percent of precision it costs.
+  const daysElapsed = Math.min(totalDays, Math.max(0, Math.round(elapsedMs / MS_PER_DAY)));
+  const daysRemaining = totalDays - daysElapsed;
 
   const observed = summariseUsage(input.usage, plan, {
     start: period.start,
@@ -372,16 +382,9 @@ export function projectInvoice(input: InvoiceInput & { asOf: Date }): InvoicePro
   });
 
   // Before any time has elapsed there is no rate to extrapolate from, so the
-  // projection is simply what has been observed: zero.
-  //
-  // The rate is rounded ONCE, here, and the projection is built from the
-  // rounded value — so the figure shown to a reader is the figure the
-  // projection actually used. Projecting from an unrounded rate while
-  // displaying a rounded one puts the arithmetic a few units out of reach,
-  // which is the whole defect this is meant to close. The precision given up
-  // is a handful of units in six figures.
+  // projection is simply what has been observed.
   const dailyAverage = daysElapsed > 0 ? Math.round(observed.totalUnits / daysElapsed) : 0;
-  const projectedUnits = Math.round(observed.totalUnits + dailyAverage * daysRemaining);
+  const projectedUnits = observed.totalUnits + dailyAverage * daysRemaining;
 
   // Re-run the full invoice against the projected unit count by synthesising a
   // single event, so projection and actual go through exactly the same code.
@@ -396,19 +399,14 @@ export function projectInvoice(input: InvoiceInput & { asOf: Date }): InvoicePro
 
   const invoice = computeInvoice({ ...input, usage: [synthetic] });
 
-  // Round elapsed, then DERIVE remaining from it. Rounding both independently
-  // lets them sum to 32 days in a 31-day month, which is the kind of detail
-  // that quietly undermines trust in a billing surface.
-  const elapsedDays = Math.round(daysElapsed);
-
   return {
     ...invoice,
     projected: true,
     method: "Linear projection from this period's observed daily average",
     projectedUnits,
     observedUnits: observed.totalUnits,
-    daysElapsed: elapsedDays,
-    daysRemaining: totalDays - elapsedDays,
+    daysElapsed,
+    daysRemaining,
     dailyAverage,
   };
 }

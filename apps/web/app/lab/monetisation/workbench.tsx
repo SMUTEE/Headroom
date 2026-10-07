@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import Link from 'next/link';
 import {
   Badge,
   Button,
@@ -25,25 +26,16 @@ import {
   type PlanOverride,
   repriceBook,
 } from '@headroom/domain';
-import { HERO_ACCOUNT_ID, REFERENCE_NOW, seedWorld } from '@headroom/data';
+import { HERO_ACCOUNT_ID, seedWorld } from '@headroom/data';
 import { AccountDeltaPanel } from './account-delta-panel';
-import { CustomerBillingView } from './customer-billing-view';
 
 /**
- * Two periods, deliberately, and each confined to one surface.
- *
- * The operator flow — controls, book impact, account delta — works entirely
- * over the LAST COMPLETE period, because a founder reasons about "what would
- * this have done to last month". Every figure in that flow agrees with every
- * other one.
- *
- * The customer billing view is the only thing that projects, because the
- * customer's question is "what is this month going to cost me". Keeping the
- * projection out of the operator flow is what stops two periods sitting side
- * by side as unlabelled money.
+ * The operator surface works entirely over the LAST COMPLETE period, because a
+ * founder reasons about "what would this have done to last month". Every
+ * figure here agrees with every other one. The projection lives on the
+ * customer page, which is the only place it answers a real question.
  */
-const LAST_COMPLETE_PERIOD = monthPeriod(new Date('2026-09-15T00:00:00Z'));
-const CURRENT_PERIOD = monthPeriod(REFERENCE_NOW);
+const PERIOD = monthPeriod(new Date('2026-09-15T00:00:00Z'));
 
 const EDITABLE_PLANS: ReadonlyArray<{ value: PlanId; label: string }> = [
   { value: 'starter', label: 'Starter' },
@@ -80,7 +72,7 @@ export function Workbench() {
         accounts: world.accounts,
         plans: world.plans,
         usage: world.usageEvents,
-        period: LAST_COMPLETE_PERIOD,
+        period: PERIOD,
         overrides,
       }),
     [overrides],
@@ -95,34 +87,29 @@ export function Workbench() {
   );
 
   return (
-    <div className="flex flex-col gap-6">
-      <Callout
-        tone="info"
-        title="Try this: drag Included usage down to 40k, then look at Loomline."
-      >
-        Every figure is synthetic. The book re-prices against September, the last complete
-        billing period.
-      </Callout>
-
-      {/* Controls and their immediate consequence, side by side. */}
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)]">
-        <Card className="flex flex-col gap-5 self-start">
-          <CardHeader
-            title="Packaging"
-            description="Change the shape of a plan and watch your current customers re-price."
-            action={
-              <Button size="sm" variant="ghost" onClick={() => setOverrides({})} disabled={!dirty}>
-                Reset
-              </Button>
-            }
-          />
-
-          <SegmentedControl
-            label="Plan to edit"
-            options={EDITABLE_PLANS}
-            value={editing}
-            onChange={(value) => setEditing(value)}
-          />
+    <div className="flex flex-col gap-5">
+      {/* Controls span the width rather than sitting in a tall rail beside a
+          short card, which left a column of dead space. */}
+      <Card className="flex flex-col gap-4">
+        <CardHeader
+          title="Model a packaging change"
+          description="Nothing is saved. This re-prices September against the proposed shape."
+          action={
+            <Button size="sm" variant="ghost" onClick={() => setOverrides({})} disabled={!dirty}>
+              Reset
+            </Button>
+          }
+        />
+        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+          <div>
+            <p className="pb-2 text-label text-text-primary">Plan</p>
+            <SegmentedControl
+              label="Plan to edit"
+              options={EDITABLE_PLANS}
+              value={editing}
+              onChange={(value) => setEditing(value)}
+            />
+          </div>
 
           <Slider
             label="Monthly base"
@@ -152,59 +139,59 @@ export function Workbench() {
             min={0}
             max={5}
             step={0.01}
-            suffix="cents per unit"
+            suffix="c / unit"
             hint={`${format(fromDollars((current.overageRatePerUnit / 100) * 10_000))} per 10,000 units`}
             onChange={(value) => update({ overageRatePerUnit: value })}
           />
-        </Card>
+        </div>
+      </Card>
 
-        <Card className="self-start">
-          <CardHeader
-            title="Impact on your current customers"
-            description="September · 8 accounts · synthetic"
+      {/* The consequence, immediately under the cause. */}
+      <Card>
+        <div className="grid grid-cols-2 gap-5 sm:grid-cols-4">
+          <Metric
+            label="Revenue, September"
+            value={format(impact.revenueBefore, { showCents: false })}
           />
-          <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
-            <Metric label="Revenue now" value={format(impact.revenueBefore, { showCents: false })} />
-            <Metric
-              label="After change"
-              value={format(impact.revenueAfter, { showCents: false })}
-              emphasis
-            />
-            <Metric
-              label="Change"
-              value={`${impact.revenueDelta >= 0 ? '+' : ''}${format(impact.revenueDelta, { showCents: false })}`}
-              trend={impact.revenueDelta === 0 ? 'flat' : impact.revenueDelta > 0 ? 'up' : 'down'}
-              hint={impact.revenueDelta === 0 ? 'no change' : undefined}
-            />
-            <Metric
-              label="Newly in overage"
-              value={String(impact.crossingIntoOverage)}
-              hint={impact.crossingIntoOverage === 1 ? 'account' : 'accounts'}
-              trend={impact.crossingIntoOverage > 0 ? 'up' : 'flat'}
-              upIsGood={false}
-            />
-          </div>
+          <Metric
+            label="Under the proposal"
+            value={format(impact.revenueAfter, { showCents: false })}
+            emphasis
+          />
+          <Metric
+            label="Change"
+            value={`${impact.revenueDelta >= 0 ? '+' : ''}${format(impact.revenueDelta, { showCents: false })}`}
+            trend={impact.revenueDelta === 0 ? 'flat' : impact.revenueDelta > 0 ? 'up' : 'down'}
+            hint={impact.revenueDelta === 0 ? 'no change' : undefined}
+          />
+          <Metric
+            label="Newly in overage"
+            value={String(impact.crossingIntoOverage)}
+            hint={impact.crossingIntoOverage === 1 ? 'account' : 'accounts'}
+            trend={impact.crossingIntoOverage > 0 ? 'up' : 'flat'}
+            upIsGood={false}
+          />
+        </div>
 
-          {impact.sharplyIncreased > 0 ? (
-            <Callout
-              className="mt-4"
-              tone="danger"
-              title={`${impact.sharplyIncreased} ${impact.sharplyIncreased === 1 ? 'account sees its bill' : 'accounts see their bills'} more than double`}
-            >
-              These are the customers who will email you. A pricing change is not a revenue
-              number, it is a distribution — and this is the tail of it.
-            </Callout>
-          ) : null}
-        </Card>
-      </div>
+        {impact.sharplyIncreased > 0 ? (
+          <Callout
+            className="mt-4"
+            tone="danger"
+            title={`${impact.sharplyIncreased} ${impact.sharplyIncreased === 1 ? 'account sees its bill' : 'accounts see their bills'} more than double`}
+          >
+            These are the customers who will email you. A pricing change is not a revenue number,
+            it is a distribution — and this is the tail of it.
+          </Callout>
+        ) : null}
+      </Card>
 
       {/* Master and detail, adjacent, so a click has a visible response. */}
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,26rem)]">
+      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(0,25rem)]">
         <Card flush className="self-start overflow-hidden">
           <div className="p-4">
             <CardHeader
-              title="Every account, largest increase first"
-              description="Select one to see what the change does to them."
+              title="Accounts"
+              description="Largest increase first. Select one to see what the change does to them."
             />
           </div>
           <div className="overflow-x-auto">
@@ -226,8 +213,7 @@ export function Workbench() {
                       key={row.accountId}
                       interactive
                       /* aria-current is valid on any element and is announced.
-                         aria-selected is not supported on a row outside a grid,
-                         so the previous markup announced nothing at all. */
+                         aria-selected is not supported on a row outside a grid. */
                       aria-current={isSelected ? 'true' : undefined}
                       className={isSelected ? 'bg-accent-bg' : undefined}
                       onClick={() => setSelectedId(row.accountId)}
@@ -238,9 +224,7 @@ export function Workbench() {
                               on colour alone. */}
                           <span
                             aria-hidden
-                            className={`h-4 w-0.5 shrink-0 rounded-full ${
-                              isSelected ? 'bg-accent-solid' : ''
-                            }`}
+                            className={`h-4 w-0.5 shrink-0 rounded-full ${isSelected ? 'bg-accent-solid' : ''}`}
                           />
                           <button
                             type="button"
@@ -283,36 +267,24 @@ export function Workbench() {
           </div>
         </Card>
 
-        <div className="self-start xl:sticky xl:top-6">
+        <div className="flex flex-col gap-3 self-start xl:sticky xl:top-20">
           <AccountDeltaPanel
             account={selected}
             currentPlan={selectedBasePlan}
             proposedPlan={selectedPlan}
             usage={selectedUsage}
-            period={LAST_COMPLETE_PERIOD}
+            period={PERIOD}
             periodLabel="September"
             hasProposal={dirty}
           />
+          <Link
+            href={`/lab/monetisation/customer/${selected.id}`}
+            className="rounded-md border border-border px-3 py-2 text-center text-label text-text-secondary transition-colors hover:bg-bg-component hover:text-text-primary"
+          >
+            See what {selected.companyName} is shown &rarr;
+          </Link>
         </div>
       </div>
-
-      {/* The other side of the same engine: what the customer is shown. */}
-      <div className="border-t border-border pt-6">
-        <h2 className="text-h3">The same maths, from the customer&rsquo;s side</h2>
-        <p className="mt-2 max-w-prose text-body-sm text-text-secondary">
-          A pricing change only works if the customer can see it coming. This is{' '}
-          {selected.companyName}&rsquo;s own billing page for the current month, driven by the
-          same engine and the same plan configuration as everything above.
-        </p>
-      </div>
-
-      <CustomerBillingView
-        account={selected}
-        plan={selectedPlan}
-        usage={selectedUsage}
-        period={CURRENT_PERIOD}
-        asOf={REFERENCE_NOW}
-      />
     </div>
   );
 }
