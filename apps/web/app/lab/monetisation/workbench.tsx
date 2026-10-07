@@ -93,6 +93,7 @@ export function Workbench() {
       <Card className="flex flex-col gap-4">
         <CardHeader
           title="Model a packaging change"
+            headingLevel={2}
           description="Nothing is saved. This re-prices September against the proposed shape."
           action={
             <Button size="sm" variant="ghost" onClick={() => setOverrides({})} disabled={!dirty}>
@@ -191,6 +192,7 @@ export function Workbench() {
           <div className="p-4">
             <CardHeader
               title="Accounts"
+            headingLevel={2}
               description="Largest increase first. Select one to see what the change does to them."
             />
           </div>
@@ -211,32 +213,30 @@ export function Workbench() {
                   return (
                     <Tr
                       key={row.accountId}
-                      interactive
                       /* aria-current is valid on any element and is announced.
                          aria-selected is not supported on a row outside a grid. */
                       aria-current={isSelected ? 'true' : undefined}
                       className={isSelected ? 'bg-accent-bg' : undefined}
-                      onClick={() => setSelectedId(row.accountId)}
                     >
-                      <Td>
-                        <span className="flex items-center gap-2">
+                      <Td className="p-0">
+                        {/* One target for pointer and keyboard alike. The
+                            button fills the cell rather than sitting inside a
+                            separately-clickable row, and clears the 24px
+                            minimum on its own. */}
+                        <button
+                          type="button"
+                          aria-pressed={isSelected}
+                          className="flex w-full items-center gap-2 px-3 py-2.5 text-left underline-offset-2 hover:underline"
+                          onClick={() => setSelectedId(row.accountId)}
+                        >
                           {/* A shape, not only a tint: selection must not rest
                               on colour alone. */}
                           <span
                             aria-hidden
                             className={`h-4 w-0.5 shrink-0 rounded-full ${isSelected ? 'bg-accent-solid' : ''}`}
                           />
-                          <button
-                            type="button"
-                            className="text-left underline-offset-2 hover:underline"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setSelectedId(row.accountId);
-                            }}
-                          >
-                            {row.companyName}
-                          </button>
-                        </span>
+                          {row.companyName}
+                        </button>
                       </Td>
                       <Td numeric>{format(row.before, { showCents: false })}</Td>
                       <Td numeric>{format(row.after, { showCents: false })}</Td>

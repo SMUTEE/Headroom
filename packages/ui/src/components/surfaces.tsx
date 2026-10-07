@@ -30,16 +30,21 @@ export function CardHeader({
   description,
   action,
   className,
+  // The outline is the page's concern, not the card's. A card nested under an
+  // h1 with nothing between needs an h2, or the outline skips a level.
+  headingLevel = 3,
 }: {
   title: ReactNode;
   description?: ReactNode;
   action?: ReactNode;
   className?: string;
+  headingLevel?: 2 | 3 | 4;
 }) {
+  const Heading = `h${headingLevel}` as 'h2' | 'h3' | 'h4';
   return (
     <div className={cn('flex items-start justify-between gap-4', className)}>
       <div className="min-w-0">
-        <h3 className="text-label text-text-primary">{title}</h3>
+        <Heading className="text-label text-text-primary">{title}</Heading>
         {description ? (
           <p className="mt-1 text-metadata text-text-secondary">{description}</p>
         ) : null}

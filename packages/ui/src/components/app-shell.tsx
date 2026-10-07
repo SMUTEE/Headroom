@@ -81,6 +81,15 @@ export function AppShell({
 }: AppShellProps) {
   return (
     <div className="flex min-h-full flex-col">
+      {/* Repeated chrome precedes the content on every page, so the first
+          focusable element is a way past it. Visible only on focus. */}
+      <a
+        href="#main"
+        className="sr-only focus-visible:not-sr-only focus-visible:absolute focus-visible:left-3 focus-visible:top-3 focus-visible:z-50 focus-visible:rounded-md focus-visible:bg-bg-surface focus-visible:px-3 focus-visible:py-2 focus-visible:text-label focus-visible:text-text-primary focus-visible:shadow-md"
+      >
+        Skip to content
+      </a>
+
       {/* Top bar spans the full width so the brand sits above the sidebar,
           which is what makes the thing read as an application rather than a
           document with a menu beside it. */}
@@ -114,7 +123,7 @@ export function AppShell({
           </div>
         </nav>
 
-        <main className="min-w-0 flex-1">
+        <main id="main" tabIndex={-1} className="min-w-0 flex-1">
           <div className="border-b border-border px-4 py-5 sm:px-6">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div className="min-w-0">
