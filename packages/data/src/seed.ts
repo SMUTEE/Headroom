@@ -63,7 +63,7 @@ export function seedPlans(): PricingPlan[] {
       overageRatePerUnit: 0.25, // cents per unit → $0.0025
       includedSeats: 3,
       perSeatMonthly: fromDollars(12),
-      usageCap: null,
+      unlimitedUsage: false,
       annualDiscount: 0.1,
     },
     {
@@ -74,7 +74,7 @@ export function seedPlans(): PricingPlan[] {
       overageRatePerUnit: 0.12,
       includedSeats: 10,
       perSeatMonthly: fromDollars(19),
-      usageCap: null,
+      unlimitedUsage: false,
       annualDiscount: 0.17,
     },
     {
@@ -85,7 +85,7 @@ export function seedPlans(): PricingPlan[] {
       overageRatePerUnit: 0.08,
       includedSeats: 25,
       perSeatMonthly: fromDollars(25),
-      usageCap: null,
+      unlimitedUsage: false,
       annualDiscount: 0.2,
     },
     {
@@ -96,9 +96,9 @@ export function seedPlans(): PricingPlan[] {
       overageRatePerUnit: 0.05,
       includedSeats: 100,
       perSeatMonthly: fromDollars(0),
-      // Unlimited usage: overage is never charged. An edge case the billing
-      // engine has to handle rather than divide by.
-      usageCap: null,
+      // The only plan with unlimited usage. The billing engine must branch on
+      // this, and the UI must stop warning about an overage that cannot occur.
+      unlimitedUsage: true,
       annualDiscount: 0.2,
     },
   ];
@@ -307,13 +307,15 @@ export function seedUsageEvents(): UsageEvent[] {
 function injectUsageImperfections(events: UsageEvent[]): UsageEvent[] {
   const out = [...events];
 
-  // A duplicate delivery of day 9. Same idempotency key, new id — which is how
-  // it arrives in reality, and why dedup cannot key on `id`.
-  const original = out.find((e) => e.id === `ue_${HERO_ACCOUNT_ID}_9`);
+  // A duplicate delivery inside the CURRENT billing period. Same idempotency
+  // key, new id — which is how it arrives in reality, and why dedup cannot key
+  // on `id`. Deliberately placed in the current period so the handling is
+  // visible in the demo rather than buried in a closed one.
+  const original = out.find((e) => e.id === `ue_${HERO_ACCOUNT_ID}_3`);
   if (original) {
     out.push({
       ...original,
-      id: `ue_${HERO_ACCOUNT_ID}_9_redelivered`,
+      id: `ue_${HERO_ACCOUNT_ID}_3_redelivered`,
     });
   }
 

@@ -27,6 +27,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full`}
+      // themeScript sets data-theme before React hydrates, so the server
+      // markup and the client intentionally disagree on this one element.
+      // Without this, React reports a hydration mismatch on every page load.
+      suppressHydrationWarning
     >
       <head>
         {/* Applies the stored appearance before first paint so a dark-mode

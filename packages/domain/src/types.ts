@@ -33,9 +33,19 @@ export interface PricingPlan {
   /** Seats included before per-seat charges apply. */
   includedSeats: number;
   perSeatMonthly: Cents;
-  /** `null` means unlimited usage: no overage is ever charged. */
-  usageCap: number | null;
-  /** Fraction off when billed annually, e.g. 0.2 for two months free. */
+  /**
+   * When true, usage beyond `includedUnits` is never charged. An edge case the
+   * billing engine must branch on rather than multiply by zero, because the
+   * interface also has to stop showing an overage warning that cannot happen.
+   */
+  unlimitedUsage: boolean;
+  /**
+   * Fraction off when billed annually, e.g. 0.2 for two months free.
+   *
+   * Business rule: the annual discount applies to the subscription (base and
+   * seats) and NOT to usage overage. Committing to a term discounts the
+   * commitment, not consumption beyond it.
+   */
   annualDiscount: number;
 }
 

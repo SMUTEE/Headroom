@@ -1,23 +1,69 @@
 import Link from "next/link";
+import { ThemeToggle } from "@headroom/ui";
+
+const BUILDS = [
+  {
+    href: "/lab/monetisation",
+    number: "01",
+    name: "Monetisation Lab",
+    question: "If we change this price, what happens to the customers we already have?",
+    status: "live" as const,
+  },
+];
 
 export default function Home() {
   return (
     <main className="mx-auto w-full max-w-3xl px-4 py-20 sm:px-6">
-      <p className="text-metadata text-text-secondary">Headroom · product lab</p>
-      <h1 className="mt-2 text-display">
+      <div className="flex items-start justify-between gap-6">
+        <p className="text-metadata text-text-secondary">Headroom · product lab</p>
+        <ThemeToggle />
+      </div>
+
+      <h1 className="mt-3 text-display">
         I build the product surfaces where business logic, money and AI judgment meet.
       </h1>
       <p className="mt-5 text-body text-text-secondary">
-        Foundation is in place. Builds land here as they ship.
+        A public lab working through monetisation, activation, account health, retention, billing
+        and AI-assisted decisions in a realistic B2B SaaS environment. Every figure in it is
+        synthetic and labelled as such.
       </p>
-      <nav className="mt-8 flex gap-4">
-        <Link
-          href="/system"
-          className="rounded-md bg-accent-solid px-4 py-2 text-label text-text-on-accent transition-colors hover:bg-accent-solid-hover"
-        >
-          Design system
-        </Link>
-      </nav>
+
+      <h2 className="mt-14 text-label text-text-secondary">Builds</h2>
+      <ul className="mt-3 flex flex-col gap-px">
+        {BUILDS.map((build) => (
+          <li key={build.href}>
+            <Link
+              href={build.href}
+              className="group flex gap-4 rounded-md border border-transparent px-3 py-4 transition-colors hover:border-border hover:bg-bg-surface"
+            >
+              <span data-numeric className="text-metadata text-text-disabled">
+                {build.number}
+              </span>
+              <span className="min-w-0">
+                <span className="block text-label text-text-primary group-hover:text-accent-text">
+                  {build.name}
+                </span>
+                <span className="mt-1 block text-body-sm text-text-secondary">
+                  {build.question}
+                </span>
+              </span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+
+      <h2 className="mt-12 text-label text-text-secondary">System</h2>
+      <Link
+        href="/system"
+        className="mt-3 flex gap-4 rounded-md border border-transparent px-3 py-4 transition-colors hover:border-border hover:bg-bg-surface"
+      >
+        <span className="min-w-0">
+          <span className="block text-label text-text-primary">Design system</span>
+          <span className="mt-1 block text-body-sm text-text-secondary">
+            Generated colour ramps, contrast-measured in both appearances, shared by every build.
+          </span>
+        </span>
+      </Link>
     </main>
   );
 }
