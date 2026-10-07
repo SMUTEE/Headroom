@@ -1,0 +1,6 @@
+/**
+ * The app owns no colour or type decisions. Everything comes from the design
+ * system package, so every build in the lab is provably using the same system
+ * rather than drifting into one-off values.
+ */
+@import "@headroom/ui/styles.css";
