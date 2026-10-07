@@ -3,13 +3,13 @@
 **Owner:** Segun Akinnibosun / MAD
 **Started:** 2026-10-07
 **Status:** Strategy under construction. No code written yet.
-**Purpose of this file:** the single portable context document. Anyone — a new Claude session, Cursor, a collaborator — should be able to read this file alone and know what we are building, why, what is settled, and what is still open. It supersedes nothing; it sits *above* the two PRDs as the decision layer.
+**Purpose of this file:** the single portable context document. Anyone picking this up cold — a new session, another editor, a collaborator — should be able to read this file alone and know what we are building, why, what is settled, and what is still open. It supersedes nothing; it sits *above* the two PRDs as the decision layer.
 
 **Companion file:** `BUILDS.md` — the per-build articulation. **These two files travel together.** This one holds strategy and decisions; that one holds what each build is and why.
 
 **Source documents:**
 - `Relay Series PRD AI-Guided Engineering Portfolio Track (1).md` — PRD v1, Oct 4 2026
-- `Relay_Product_Systems_Lab_PRD_Claude_Code (1).md` — PRD v2, Oct 5 2026 (a revision of v1)
+- `Relay_Product_Systems_Lab_PRD.md` — PRD v2, Oct 5 2026 (a revision of v1)
 
 ---
 

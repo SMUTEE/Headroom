@@ -31,6 +31,7 @@ import {
   WARNING_THRESHOLD,
 } from '@headroom/domain';
 import { HERO_ACCOUNT_ID, REFERENCE_NOW, seedWorld } from '@headroom/data';
+import { AccountDeltaPanel } from './account-delta-panel';
 
 /**
  * Two periods, deliberately.
@@ -327,8 +328,17 @@ export function Workbench() {
       </div>
 
       {/* ------------------------------------------------------------------ */}
-      {/* Customer control centre                                             */}
+      {/* Account detail — two versions, side by side for comparison.         */}
       {/* ------------------------------------------------------------------ */}
+      <div className="border-t border-border pt-6">
+        <h2 className="text-label text-text-secondary">Account detail — version A (current)</h2>
+        <p className="mt-1 max-w-prose text-metadata text-text-disabled">
+          Answers &ldquo;everything the billing engine knows about this account&rdquo;. Mixes a
+          closed period with a projection of the current one, and mixes customer-facing figures
+          with operator and engineering notes.
+        </p>
+      </div>
+
       <Card className="flex flex-col gap-5">
         <CardHeader
           title={`What ${selected.companyName} sees`}
@@ -447,6 +457,24 @@ export function Workbench() {
           </div>
         </div>
       </Card>
+
+      <div className="border-t border-border pt-6">
+        <h2 className="text-label text-text-secondary">Account detail — version B (revised)</h2>
+        <p className="mt-1 max-w-prose text-metadata text-text-disabled">
+          Answers only &ldquo;what does the proposed change do to this customer&rdquo;, over the
+          same period as the table above. One reader, one question, four elements.
+        </p>
+      </div>
+
+      <AccountDeltaPanel
+        account={selected}
+        currentPlan={world.plans.find((p) => p.id === selected.planId)!}
+        proposedPlan={selectedPlan}
+        usage={selectedUsage}
+        period={LAST_COMPLETE_PERIOD}
+        periodLabel="September"
+        hasProposal={dirty}
+      />
     </div>
   );
 }

@@ -232,6 +232,7 @@ function subscriptionLines(input: InvoiceInput): InvoiceLine[] {
       lines.push({
         label: `Additional seats (prorated)`,
         quantity: Math.max(0, seats - plan.includedSeats),
+        unit: 'seat',
         amount: seatTotal,
         kind: 'seats',
       });
@@ -246,6 +247,7 @@ function subscriptionLines(input: InvoiceInput): InvoiceLine[] {
     lines.push({
       label: `Additional seats`,
       quantity: extraSeats,
+      unit: 'seat',
       amount: multiply(plan.perSeatMonthly, extraSeats),
       kind: 'seats',
     });
@@ -282,6 +284,7 @@ export function computeInvoice(input: InvoiceInput): ComputedInvoice {
     lines.push({
       label: `Usage overage`,
       quantity: usage.overageUnits,
+      unit: 'unit',
       amount: priceUnits(usage.overageUnits, plan.overageRatePerUnit),
       kind: 'usage',
     });
@@ -332,6 +335,16 @@ export interface InvoiceProjection extends ComputedInvoice {
   observedUnits: number;
   daysElapsed: number;
   daysRemaining: number;
+  /**
+   * Units per day, the rate the projection is actually built from.
+   *
+   * Exposed because `daysElapsed` is rounded for display while the rate is
+   * computed on exact elapsed time. Without this, a reader who checks
+   * `observed ÷ daysElapsed × totalDays` gets a different answer from the one
+   * shown and has no way to account for the gap — which is fatal on a surface
+   * whose whole job is making a bill reproducible.
+   */
+  dailyAverage: number;
 }
 
 /**
@@ -360,7 +373,14 @@ export function projectInvoice(input: InvoiceInput & { asOf: Date }): InvoicePro
 
   // Before any time has elapsed there is no rate to extrapolate from, so the
   // projection is simply what has been observed: zero.
-  const dailyAverage = daysElapsed > 0 ? observed.totalUnits / daysElapsed : 0;
+  //
+  // The rate is rounded ONCE, here, and the projection is built from the
+  // rounded value — so the figure shown to a reader is the figure the
+  // projection actually used. Projecting from an unrounded rate while
+  // displaying a rounded one puts the arithmetic a few units out of reach,
+  // which is the whole defect this is meant to close. The precision given up
+  // is a handful of units in six figures.
+  const dailyAverage = daysElapsed > 0 ? Math.round(observed.totalUnits / daysElapsed) : 0;
   const projectedUnits = Math.round(observed.totalUnits + dailyAverage * daysRemaining);
 
   // Re-run the full invoice against the projected unit count by synthesising a
@@ -389,6 +409,89 @@ export function projectInvoice(input: InvoiceInput & { asOf: Date }): InvoicePro
     observedUnits: observed.totalUnits,
     daysElapsed: elapsedDays,
     daysRemaining: totalDays - elapsedDays,
+    dailyAverage,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Comparing two invoices
+// ---------------------------------------------------------------------------
+
+export interface LineDelta {
+  label: string;
+  kind: InvoiceLine['kind'];
+  // Explicitly `| undefined` rather than only optional: the package runs with
+  // `exactOptionalPropertyTypes`, which distinguishes "absent" from "present
+  // and undefined". These are built by lookup, so they are the latter.
+  unit?: InvoiceLine['unit'] | undefined;
+  quantityBefore?: number | undefined;
+  quantityAfter?: number | undefined;
+  /** `null` where the line did not exist on that side. */
+  before: Cents | null;
+  after: Cents | null;
+  delta: Cents;
+  changed: boolean;
+}
+
+export interface InvoiceComparison {
+  lines: LineDelta[];
+  /** Only the lines that actually moved. The ones that did not are noise. */
+  changedLines: LineDelta[];
+  totalBefore: Cents;
+  totalAfter: Cents;
+  delta: Cents;
+  deltaRatio: number | null;
+}
+
+/**
+ * Diff two invoices for the same account and period.
+ *
+ * Answers "what did this change do to this customer", which is a different
+ * question from "what does this customer owe" — and the only one worth asking
+ * when the reader has just altered a price.
+ *
+ * Lines are matched on kind rather than label, because a label carries the
+ * plan name and changes when the plan does.
+ */
+export function compareInvoices(
+  before: ComputedInvoice,
+  after: ComputedInvoice,
+): InvoiceComparison {
+  const kinds = new Set<InvoiceLine['kind']>([
+    ...before.lines.map((l) => l.kind),
+    ...after.lines.map((l) => l.kind),
+  ]);
+
+  const lines: LineDelta[] = [];
+  for (const kind of kinds) {
+    const b = before.lines.find((l) => l.kind === kind);
+    const a = after.lines.find((l) => l.kind === kind);
+    const beforeAmount = b ? b.amount : null;
+    const afterAmount = a ? a.amount : null;
+    const delta = ((afterAmount ?? 0) - (beforeAmount ?? 0)) as Cents;
+
+    lines.push({
+      label: a?.label ?? b?.label ?? kind,
+      kind,
+      unit: a?.unit ?? b?.unit,
+      quantityBefore: b?.quantity,
+      quantityAfter: a?.quantity,
+      before: beforeAmount,
+      after: afterAmount,
+      delta,
+      changed: delta !== 0,
+    });
+  }
+
+  const delta = subtract(after.total, before.total);
+
+  return {
+    lines,
+    changedLines: lines.filter((l) => l.changed),
+    totalBefore: before.total,
+    totalAfter: after.total,
+    delta,
+    deltaRatio: before.total === ZERO ? null : delta / before.total,
   };
 }
 

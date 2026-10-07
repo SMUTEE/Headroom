@@ -140,8 +140,14 @@ export type InvoiceStatus = 'draft' | 'open' | 'paid' | 'past_due' | 'void';
 
 export interface InvoiceLine {
   label: string;
-  /** Units for a metered line; absent for a flat charge. */
+  /** Quantity for a metered line; absent for a flat charge. */
   quantity?: number;
+  /**
+   * What `quantity` counts, singular. Seats are not units, and a billing
+   * surface that labels them identically is the kind of carelessness a
+   * customer notices before anything else on the invoice.
+   */
+  unit?: 'unit' | 'seat' | 'day';
   amount: Cents;
   kind: 'base' | 'seats' | 'usage' | 'credit' | 'proration' | 'discount';
 }

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  compareInvoices,
   computeInvoice,
   daysInPeriod,
   monthPeriod,
@@ -636,3 +637,103 @@ describe('projection day accounting', () => {
     }
   });
 });
+
+describe('projection is reproducible from what it shows', () => {
+  it('exposes the daily rate the projection is actually built from', () => {
+    // The reader must be able to reproduce the projected figure. daysElapsed is
+    // rounded for display while the rate uses exact elapsed time, so the rate
+    // itself has to be available or the arithmetic cannot be checked.
+    const events = Array.from({ length: 7 }, (_, i) =>
+      usage(3000, {
+        idempotencyKey: `d${i}`,
+        occurredAt: new Date(Date.UTC(2026, 8, i + 1, 6)).toISOString(),
+      }),
+    );
+    const p = projectInvoice({
+      account, plan: growth, usage: events, period: PERIOD,
+      asOf: new Date('2026-09-07T12:00:00Z'),
+    });
+
+    // observed + rate x remaining must equal the projection, exactly.
+    const reproduced = Math.round(
+      p.observedUnits + p.dailyAverage * (daysInPeriod(PERIOD) - 6.5),
+    );
+    // Exact: the rate shown is the rate used.
+    expect(reproduced).toBe(p.projectedUnits);
+    expect(p.dailyAverage).toBeGreaterThan(0);
+  });
+});
+
+describe('invoice line units', () => {
+  it('labels seats as seats, not units', () => {
+    const inv = computeInvoice({
+      account: { ...account, seats: 14 }, plan: growth, usage: [], period: PERIOD,
+    });
+    expect(inv.lines.find((l) => l.kind === 'seats')?.unit).toBe('seat');
+  });
+
+  it('labels usage overage as units', () => {
+    const inv = computeInvoice({
+      account, plan: growth, usage: [usage(150_000)], period: PERIOD,
+    });
+    expect(inv.lines.find((l) => l.kind === 'usage')?.unit).toBe('unit');
+  });
+});
+
+describe('compareInvoices', () => {
+  const base = { account, usage: [usage(99_000)], period: PERIOD };
+  const tighter = { ...growth, includedUnits: 40_000 };
+
+  it('reports no changed lines when the plan is identical', () => {
+    const c = compareInvoices(
+      computeInvoice({ ...base, plan: growth }),
+      computeInvoice({ ...base, plan: growth }),
+    );
+    expect(c.changedLines).toHaveLength(0);
+    expect(c.delta).toBe(ZERO);
+    expect(c.deltaRatio).toBe(0);
+  });
+
+  it('surfaces a line that appears only after the change', () => {
+    const c = compareInvoices(
+      computeInvoice({ ...base, plan: growth }),
+      computeInvoice({ ...base, plan: tighter }),
+    );
+    const overage = c.changedLines.find((l) => l.kind === 'usage')!;
+    expect(overage.before).toBeNull();
+    expect(overage.after).toBe(7080); // 59,000 units at 0.12c
+    expect(overage.delta).toBe(7080);
+  });
+
+  it('leaves unchanged lines out of changedLines but keeps them in lines', () => {
+    const c = compareInvoices(
+      computeInvoice({ ...base, plan: growth }),
+      computeInvoice({ ...base, plan: tighter }),
+    );
+    expect(c.lines.find((l) => l.kind === 'base')?.changed).toBe(false);
+    expect(c.changedLines.some((l) => l.kind === 'base')).toBe(false);
+  });
+
+  it('matches lines on kind, so a renamed plan does not read as two changes', () => {
+    const renamed = { ...growth, name: 'Growth (2027)' };
+    const c = compareInvoices(
+      computeInvoice({ ...base, plan: growth }),
+      computeInvoice({ ...base, plan: renamed }),
+    );
+    expect(c.changedLines).toHaveLength(0);
+    expect(c.lines.filter((l) => l.kind === 'base')).toHaveLength(1);
+  });
+
+  it('computes the total delta and ratio', () => {
+    const c = compareInvoices(
+      computeInvoice({ ...base, plan: growth }),
+      computeInvoice({ ...base, plan: tighter }),
+    );
+    expect(c.delta).toBe(subtractTotals(c.totalAfter, c.totalBefore));
+    expect(c.deltaRatio).toBeCloseTo(c.delta / c.totalBefore, 10);
+  });
+});
+
+function subtractTotals(a: number, b: number) {
+  return a - b;
+}
