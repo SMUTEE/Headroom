@@ -198,7 +198,7 @@ Legend — **LOCKED**: settled, don't relitigate. **OPEN**: needs a call. **REVI
 | D-14 | Timeline is 6–10 weeks, not 11–14 days | **LOCKED** | Both PRD estimates omit content, recording, and distribution work — ~30% of total effort and the least AI-compressible part. See Section 9. |
 | D-15 | Product is named **Headroom**. "Relay" retired. | **LOCKED** 2026-10-07 | Segun's call: rename while it was free. "Relay" collided with Relay.app, Relay Financial, Relay (GraphQL), and several delivery brands, undercutting PRD v2 §27's SEO goals. "Headroom" is apt across the whole set — remaining allowance (Build 1), room to grow (Build 3), capacity — with low collision. Mentions of "Relay" that remain in this file are historical (source-document names, changelog) and are intentional. |
 | D-19 | `packages/ui` is built as a **portable design system**, extractable and referenceable from other projects | **LOCKED** 2026-10-07 | Segun's call: the system must grow across builds and be reusable on other explorations afterwards. Architectural consequences, enforced from Build 1 onward: (a) `@headroom/ui` never imports `@headroom/domain` or `@headroom/data` — a component takes primitives and callbacks, never a domain object; (b) tokens are consumable standalone via `@headroom/ui/styles.css`; (c) every component has an explicit public API through the barrel; (d) nothing app-specific leaks in. Also a live candidate for `D-18`, since a design system other people use is third-party evidence. |
-| D-18 | Pair the lab with **one genuinely real, used artifact** | **OPEN** — highest-priority new question | Research finding that cuts against the premise: the design-engineer portfolios that actually work (Paco Coursey, Emil Kowalski, Rauno Freiberg) are minimal and text-forward, deriving credibility from *real adoption* — shipped products and open source like `cmdk` — not from simulated companies. See Section 5.4 and `R-04`. |
+| D-18 | Pair the lab with one genuinely real, used artifact | **CLOSED — not doing it** 2026-10-07 | Segun's call after costing it out. The candidate was a contrast-gate package extracted from the token generator. Skipped because the value depends entirely on adoption, and adoption depends on a year of answering issues — an abandoned package reads worse than none. **Accepted consequence: the lab stays entirely self-asserted** (Section 4). The other route to third-party evidence is the teardowns (`D-08`, deferred), which should now be treated as the *only* one. Revisit only if the eval harness from Build 4 turns out to be genuinely scarce and Segun wants to maintain it. The original research finding stands and is unchanged — see Section 5.4 and `R-04`. |
 | D-16 | Keep public shipping cadence; drop daily-completion pressure | **LOCKED** | From PRD v2 §2.5, Decision 7. A broken streak is cheaper than a broken build. |
 | D-17 | One shared, internally coherent synthetic dataset across all builds | **LOCKED** | PRD v2 §36. The same account must tell the same story everywhere. Highest coherence-per-hour item in the project. |
 
@@ -350,10 +350,9 @@ Non-negotiable, because this is the domain where a knowledgeable founder will im
 
 **Still open, in priority order:**
 
-1. **One real, used artifact alongside the lab?** (`D-18`) The sharpest finding of the research (Section 5.4, `R-04`). Its real function: **it is the only thing in the plan that produces evidence Segun did not author himself.** Everything else in the portfolio is self-asserted — the build, the decision note, the claim about what it proves. Installs, issues, and third-party dependents cannot be self-authored, which is exactly why `cmdk` does more work for Paco Coursey than a case study would. Cheapest route: open-source the AI eval harness out of Build 4 — already in scope, and `R-02` shows "evaluation rigor" is now assessed by name. What it does *not* cover: working in someone else's messy codebase, or collaboration (`D-13`). **Caveat: only worth doing if genuinely useful. An unused repo proves nothing and a half-maintained one is a mild negative.**
-2. **The collaboration artifact.** (`D-13`) Nothing currently shows what it's like to brief Segun and get something back. Naturally lands with the teardowns (`D-08`), which are deferred — so this stays open until then.
+1. **The collaboration artifact.** (`D-13`) Nothing currently shows what it's like to brief Segun and get something back. Naturally lands with the teardowns (`D-08`), which are deferred — so this stays open until then.
 
-**Note: `D-18` touches Foundation.** If an extractable package is likely, the repo wants a `packages/` layout from day one rather than a retrofit. A monorepo keeps the option open at near-zero cost, so Foundation proceeds with that structure regardless of how `D-18` resolves.
+**With `D-18` closed, the teardowns (`D-08`) are now the only route to third-party evidence.** They were deferred behind the build set; that deferral is worth revisiting once Build 2 ships, because nothing else in the plan produces a signal Segun did not author himself.
 
 ---
 
@@ -430,6 +429,21 @@ Paco Coursey, Emil Kowalski, and Rauno Freiberg are the reference points. Their 
 ---
 
 ## 13. Changelog
+
+**2026-10-07 (e) — Build 1 reworked after a UX audit; repo public; `D-18` closed.** Commits `5612de5` → `7ac2ac5`, pushed to github.com/SMUTEE/Headroom (public, `main`).
+
+Segun's read that the page "didn't make sense" was correct and better aimed than my own audit, which checked whether the page was well-built rather than whether its content earned its place. What it surfaced:
+
+- **The account panel had no single reader** — customer figures, operator status and engineering notes in one card. Now two surfaces on two pages: an operator delta panel answering "what does this change do to this customer", and a customer billing page answering "what will this month cost me".
+- **The meter said "consumed" and showed a forecast.** An account that had used 23% of its allowance rendered a full red bar.
+- **Three successive passes at the same class of bug**: projected figures that a reader could not reproduce from the figures shown. Rate rounding, then day rounding, then the copy stating a different sum. Everything now derives from the displayed values — `used + rate × days remaining` lands exactly on the projection. **The lesson generalises: on a surface whose job is to be checkable, "close enough" is the bug.**
+- **The app shell and skeletons** were specified in the PRD and never built. Now in the design system, and the two pages live in product chrome rather than floating on a portfolio page.
+- **Restored the decision and honesty layers**, which I had silently dropped in a rewrite — the build demoed well and argued for nothing.
+- **A real accessibility pass** (the earlier one was a spot-check): no skip link, `h1 → h3` outline skip, rows that were a pointer target and a keyboard target at different sizes, and a sticky bar that could hide focused elements. All fixed and re-verified.
+
+117 tests. Also locked: no AI attribution anywhere in commits, code or repo (`~/.claude/CLAUDE.md`, global) — history was rewritten before the first push.
+
+**Still open:** Build 1 is not deployed and has no demo clip. `D-13` (collaboration artifact) remains parked behind the teardowns.
 
 **2026-10-07 (d) — Build 1 shipped.** Commit `755825b`. Monetisation Lab live at `/lab/monetisation`. 105 tests; typecheck, lint, build clean.
 
