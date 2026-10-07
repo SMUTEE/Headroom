@@ -4,10 +4,13 @@ import { ThemeToggle } from "@headroom/ui";
 const BUILDS = [
   {
     href: "/lab/monetisation",
-    number: "01",
-    name: "Monetisation Lab",
+    name: "Pricing & packaging",
     question: "If we change this price, what happens to the customers we already have?",
-    status: "live" as const,
+  },
+  {
+    href: "/lab/activation",
+    name: "Activation",
+    question: "Are new customers reaching value, or just finishing our checklist?",
   },
 ];
 
@@ -36,9 +39,6 @@ export default function Home() {
               href={build.href}
               className="group flex gap-4 rounded-md border border-transparent px-3 py-4 transition-colors hover:border-border hover:bg-bg-surface"
             >
-              <span data-numeric className="text-metadata text-text-disabled">
-                {build.number}
-              </span>
               <span className="min-w-0">
                 <span className="block text-label text-text-primary group-hover:text-accent-text">
                   {build.name}

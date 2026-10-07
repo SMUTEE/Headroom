@@ -3,8 +3,8 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { AppShell, AppShellMobileNav, ThemeToggle } from '@headroom/ui';
 import { seedWorld } from '@headroom/data';
-import { Brand } from '../../brand';
-import { CUSTOMER_NAV } from '../../nav';
+import { Brand } from '../../../_shell/brand';
+import { CUSTOMER_NAV } from '../../../_shell/nav';
 import { CustomerBilling } from './customer-billing';
 
 const world = seedWorld();

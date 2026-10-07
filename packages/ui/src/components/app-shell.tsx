@@ -45,7 +45,11 @@ export interface AppShellProps {
 function NavLink({ item }: { item: NavItem }) {
   const available = item.available ?? true;
   const classes = cn(
-    'block rounded-md px-2.5 py-1.5 text-label transition-colors',
+    // `relative` is load-bearing. The "not built yet" text below uses sr-only,
+    // which is position:absolute — without a positioned ancestor it resolves
+    // against the document, escapes the nav's overflow-x-auto and inflates the
+    // page's scroll width at narrow widths.
+    'relative block rounded-md px-2.5 py-1.5 text-label transition-colors',
     item.current
       ? 'bg-bg-component-active text-text-primary'
       : available
@@ -151,7 +155,10 @@ export function AppShellMobileNav({ nav }: { nav: NavGroup[] }) {
   return (
     <nav
       aria-label="Sections"
-      className="flex gap-1 overflow-x-auto border-b border-border px-4 py-2 lg:hidden"
+      // min-w-0 is load-bearing: as a flex item this defaults to
+      // min-width:auto, which lets it expand past the viewport and makes
+      // overflow-x-auto do nothing.
+      className="flex min-w-0 max-w-full gap-1 overflow-x-auto border-b border-border px-4 py-2 lg:hidden"
     >
       {items.map((item) => (
         <span key={item.label} className="shrink-0">

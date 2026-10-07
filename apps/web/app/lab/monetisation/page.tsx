@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { AppShell, AppShellMobileNav, Callout, ThemeToggle } from '@headroom/ui';
-import { Brand } from './brand';
-import { OPERATOR_NAV } from './nav';
+import { Brand } from '../_shell/brand';
+import { PRICING_NAV } from '../_shell/nav';
 import { DecisionNotes } from './decision-notes';
 import { Workbench } from './workbench';
 
@@ -15,13 +15,13 @@ export default function PricingPage() {
   return (
     <AppShell
       brand={<Brand subtitle="Operator" />}
-      nav={OPERATOR_NAV}
+      nav={PRICING_NAV}
       barEnd={<ThemeToggle />}
       title="Pricing & packaging"
       description="If we change this price, what happens to the customers we already have?"
       notice={
         <>
-          <AppShellMobileNav nav={OPERATOR_NAV} />
+          <AppShellMobileNav nav={PRICING_NAV} />
           <div className="border-b border-info-border bg-info-bg px-4 py-2 sm:px-6">
             <p className="text-metadata text-info-text">
               Demo environment. Every customer, usage figure and amount below is synthetic.

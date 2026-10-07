@@ -49,6 +49,15 @@ export {
 export { Skeleton, SkeletonText, type SkeletonProps } from './components/skeleton';
 
 export {
+  Distribution,
+  Stepper,
+  type DistributionSegment,
+  type Step,
+  type StepperProps,
+  type StepState,
+} from './components/stepper';
+
+export {
   Badge,
   Meter,
   Table,

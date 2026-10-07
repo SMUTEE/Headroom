@@ -5,7 +5,8 @@ import type { NavGroup } from '@headroom/ui';
  * but inert — the product's outline is real information, and dimming what
  * does not exist is more honest than hiding it or linking to nothing.
  */
-export const OPERATOR_NAV: NavGroup[] = [
+function operatorNav(current: string): NavGroup[] {
+  return [
   {
     items: [
       { label: 'Overview', available: false },
@@ -15,7 +16,7 @@ export const OPERATOR_NAV: NavGroup[] = [
   {
     label: 'Revenue',
     items: [
-      { label: 'Pricing & packaging', href: '/lab/monetisation', current: true },
+      { label: 'Pricing & packaging', href: '/lab/monetisation', current: current === 'pricing' },
       { label: 'Usage & billing', available: false },
       { label: 'Signals', available: false },
     ],
@@ -23,12 +24,16 @@ export const OPERATOR_NAV: NavGroup[] = [
   {
     label: 'Operations',
     items: [
-      { label: 'Activation', available: false },
+      { label: 'Activation', href: '/lab/activation', current: current === 'activation' },
       { label: 'Retention', available: false },
       { label: 'Audit log', available: false },
     ],
   },
-];
+  ];
+}
+
+export const PRICING_NAV = operatorNav('pricing');
+export const ACTIVATION_NAV = operatorNav('activation');
 
 /** The customer-facing portal. A different product, so a different shell. */
 export const CUSTOMER_NAV: NavGroup[] = [
