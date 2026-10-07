@@ -762,3 +762,33 @@ describe('every projected figure closes by hand', () => {
     }
   });
 });
+
+describe('a plan that cannot bill overage is never flagged as in overage', () => {
+  const freeOverage = { ...growth, overageRatePerUnit: 0 };
+
+  it('reports safe even far beyond the allowance', () => {
+    const summary = summariseUsage([usage(500_000)], freeOverage, PERIOD);
+    expect(usageZone(summary, freeOverage)).toBe('safe');
+  });
+
+  it('charges nothing for the excess, so the bill does not move', () => {
+    const over = computeInvoice({ account, plan: freeOverage, usage: [usage(500_000)], period: PERIOD });
+    const under = computeInvoice({ account, plan: freeOverage, usage: [usage(1_000)], period: PERIOD });
+    expect(over.total).toBe(under.total);
+  });
+
+  it('does not report an account as crossing into overage when nothing is billable', () => {
+    // Regression: dropping the allowance to 0 while the rate was also 0 marked
+    // accounts "newly in overage" whose bills did not change by a cent.
+    const accounts = [{ ...account, id: 'a1', companyName: 'Flat' }];
+    const impact = repriceBook({
+      accounts,
+      plans: [growth],
+      usage: [usage(99_000, { accountId: 'a1', idempotencyKey: 'a1' })],
+      period: PERIOD,
+      overrides: { growth: { includedUnits: 0, overageRatePerUnit: 0 } },
+    });
+    expect(impact.crossingIntoOverage).toBe(0);
+    expect(impact.accounts[0]!.zoneAfter).toBe('safe');
+  });
+});

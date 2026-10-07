@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { AppShell, AppShellMobileNav, Callout, ThemeToggle } from '@headroom/ui';
 import { Brand } from './brand';
 import { OPERATOR_NAV } from './nav';
+import { DecisionNotes } from './decision-notes';
 import { Workbench } from './workbench';
 
 export const metadata: Metadata = {
@@ -36,6 +37,7 @@ export default function PricingPage() {
         </Callout>
 
         <Workbench />
+        <DecisionNotes />
       </div>
     </AppShell>
   );

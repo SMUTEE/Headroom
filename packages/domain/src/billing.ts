@@ -155,6 +155,11 @@ export const WARNING_THRESHOLD = 0.8;
  */
 export function usageZone(summary: UsageSummary, plan: PricingPlan): UsageZone {
   if (plan.unlimitedUsage) return 'safe';
+  // A zero overage rate cannot bill for excess, so exceeding the allowance has
+  // no consequence and flagging it as overage is false. Without this, a plan
+  // priced at 0c per unit shows accounts "newly in overage" whose bills do not
+  // move by a cent.
+  if (plan.overageRatePerUnit <= 0) return 'safe';
   if (summary.totalUnits > summary.includedUnits) return 'overage';
   if (summary.allowanceUsed !== null && summary.allowanceUsed >= WARNING_THRESHOLD) {
     return 'warning';

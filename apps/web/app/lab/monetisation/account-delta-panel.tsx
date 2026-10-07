@@ -39,45 +39,81 @@ export interface AccountDeltaPanelProps {
   hasProposal: boolean;
 }
 
-/** One sentence naming the cause, in the reader's language rather than the schema's. */
+/**
+ * Explain the cause, in the reader's language rather than the schema's.
+ *
+ * Built compositionally rather than as a chain of early returns. The earlier
+ * version narrated whichever lever it checked first and ignored the rest, so
+ * changing the allowance and the rate together produced "increases the
+ * billable overage" beside a bill that had gone *down*. A sentence that
+ * contradicts the number above it is worse than no sentence.
+ *
+ * So: list every lever that moved, then let the delta — not any one lever —
+ * state the direction.
+ */
 function explain(
   account: Account,
   currentPlan: PricingPlan,
   proposedPlan: PricingPlan,
   usedUnits: number,
+  delta: number,
 ): string {
   const name = account.companyName;
   const used = usedUnits.toLocaleString();
+  const causes: string[] = [];
+
+  if (currentPlan.monthlyBase !== proposedPlan.monthlyBase) {
+    causes.push(
+      `the base moves from ${format(currentPlan.monthlyBase, { showCents: false })} to ${format(proposedPlan.monthlyBase, { showCents: false })}`,
+    );
+  }
 
   if (currentPlan.includedUnits !== proposedPlan.includedUnits) {
-    const wasOver = usedUnits > currentPlan.includedUnits;
-    const nowOver = usedUnits > proposedPlan.includedUnits;
-
-    if (!wasOver && nowOver) {
-      return `${name} used ${used} units. Today ${currentPlan.includedUnits.toLocaleString()} are included, so they pay no overage. The proposal includes ${proposedPlan.includedUnits.toLocaleString()}, putting them ${(usedUnits - proposedPlan.includedUnits).toLocaleString()} units over for the first time.`;
-    }
-    if (wasOver && nowOver) {
-      return `${name} was already over. Lowering the allowance from ${currentPlan.includedUnits.toLocaleString()} to ${proposedPlan.includedUnits.toLocaleString()} increases the billable overage from ${(usedUnits - currentPlan.includedUnits).toLocaleString()} to ${(usedUnits - proposedPlan.includedUnits).toLocaleString()} units.`;
-    }
-    if (wasOver && !nowOver) {
-      return `${name} used ${used} units and pays overage today. The proposal includes ${proposedPlan.includedUnits.toLocaleString()}, which covers them entirely.`;
-    }
-    return `${name} used ${used} units, inside the allowance either way. The change does not reach them.`;
+    causes.push(
+      `the allowance moves from ${currentPlan.includedUnits.toLocaleString()} to ${proposedPlan.includedUnits.toLocaleString()} units`,
+    );
   }
 
   if (currentPlan.overageRatePerUnit !== proposedPlan.overageRatePerUnit) {
-    const over = Math.max(0, usedUnits - proposedPlan.includedUnits);
-    if (over === 0) {
-      return `${name} used ${used} units, inside the ${proposedPlan.includedUnits.toLocaleString()} included. A rate change only reaches customers who exceed their allowance.`;
-    }
-    return `${name} is ${over.toLocaleString()} units over. The rate moves from ${currentPlan.overageRatePerUnit}c to ${proposedPlan.overageRatePerUnit}c per unit, and every one of those units reprices.`;
+    causes.push(
+      `the overage rate moves from ${currentPlan.overageRatePerUnit}c to ${proposedPlan.overageRatePerUnit}c per unit`,
+    );
   }
 
-  if (currentPlan.monthlyBase !== proposedPlan.monthlyBase) {
-    return `The base price moves from ${format(currentPlan.monthlyBase, { showCents: false })} to ${format(proposedPlan.monthlyBase, { showCents: false })}. This reaches every ${proposedPlan.name} customer regardless of usage.`;
+  if (currentPlan.perSeatMonthly !== proposedPlan.perSeatMonthly) {
+    causes.push(
+      `the per-seat price moves from ${format(currentPlan.perSeatMonthly)} to ${format(proposedPlan.perSeatMonthly)}`,
+    );
   }
 
-  return `This proposal does not change anything on ${name}'s plan.`;
+  if (causes.length === 0) {
+    return `This proposal does not change anything on ${name}'s plan.`;
+  }
+
+  const lever =
+    causes.length === 1
+      ? causes[0]!
+      : `${causes.slice(0, -1).join(', ')} and ${causes[causes.length - 1]!}`;
+
+  // Direction comes from the total, never from a single lever.
+  if (delta === 0) {
+    return `For ${name}, ${lever} — but at ${used} units used, none of it reaches their bill.`;
+  }
+
+  const wasOver = usedUnits > currentPlan.includedUnits;
+  const nowOver =
+    usedUnits > proposedPlan.includedUnits && proposedPlan.overageRatePerUnit > 0;
+
+  const consequence =
+    !wasOver && nowOver
+      ? ` That puts them ${(usedUnits - proposedPlan.includedUnits).toLocaleString()} units into billable overage for the first time.`
+      : wasOver && !nowOver
+        ? ' That takes them out of billable overage entirely.'
+        : nowOver
+          ? ` They are ${(usedUnits - proposedPlan.includedUnits).toLocaleString()} units over either way, and every one of those units reprices.`
+          : '';
+
+  return `${name} used ${used} units. Under this proposal ${lever}.${consequence}`;
 }
 
 export function AccountDeltaPanel({
@@ -152,7 +188,7 @@ export function AccountDeltaPanel({
           </div>
 
           <p className="max-w-prose text-body-sm text-text-secondary">
-            {explain(account, currentPlan, proposedPlan, consumption.totalUnits)}
+            {explain(account, currentPlan, proposedPlan, consumption.totalUnits, diff.delta)}
           </p>
 
           {diff.changedLines.length > 0 ? (
