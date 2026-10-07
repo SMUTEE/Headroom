@@ -431,6 +431,19 @@ Paco Coursey, Emil Kowalski, and Rauno Freiberg are the reference points. Their 
 
 ## 13. Changelog
 
+**2026-10-07 (d) — Build 1 shipped.** Commit `755825b`. Monetisation Lab live at `/lab/monetisation`. 105 tests; typecheck, lint, build clean.
+
+The core interaction works and is sharper than planned: lowering Growth's included usage moves **only Growth accounts** — Orbit Health and Fieldstack (already over) rise together, and **Loomline crosses into overage for the first time**. That one row is the whole argument, and it exists because the seed was built coherently (`D-17`): Loomline sits at 99,000 units against a 100,000 allowance, deliberately on the edge.
+
+**Three bugs found by building, all worth keeping for the write-up:**
+1. **Hydration mismatch present since Foundation** — the no-flash theme script sets `data-theme` before React hydrates, so server and client markup disagreed on every page load. Fixed with `suppressHydrationWarning`.
+2. **"7 of 32 days elapsed" in a 31-day month** — elapsed and remaining were rounded independently. Now remaining is derived from elapsed. Caught by looking at the rendered page, not by a test; a regression test over every day of every month was added after.
+3. **Slider used `CSS.escape` inside a `<style>` tag**, a browser global that crashes during SSR. Track and thumb now styled once in `styles.css` against a custom property.
+
+**Design system grew to 12 components** and holds `D-19`: `@headroom/ui` still imports nothing from `domain` or `data`. Two rules that earned their place — badges always render text (no icon-only variant, so state is never colour alone), and inputs use `border-control` rather than `border`, because a control's boundary is what identifies it and answers to 3:1.
+
+**Velocity:** Build 1 took roughly one session, matching Foundation. Two sessions for Foundation + a deep build holds the 3–5 session MVP estimate.
+
 **2026-10-07 (c) — Foundation shipped.** Commit `d95fb84`. pnpm monorepo (`apps/web` + `packages/ui|domain|data`) on Next 16.4 / React 19.3 / Tailwind v4, typecheck + lint + build + 51 tests all clean.
 
 What landed, and the three things worth remembering:
