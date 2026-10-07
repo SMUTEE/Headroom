@@ -82,8 +82,13 @@ export interface Account {
   /** Monthly recurring revenue, excluding usage overage. */
   mrr: Cents;
   createdAt: string;
-  /** Absent until the activation event actually fires. */
-  activatedAt?: string;
+  /**
+   * There is deliberately no `activatedAt` here. Activation is derived from
+   * events by `deriveActivation`, never stored — a stored flag drifts from the
+   * events that justify it the moment anything is backfilled, replayed or
+   * corrected, and then the number nobody can explain is the one the team
+   * plans against.
+   */
   /** Unapplied credit balance. */
   creditBalance: Cents;
 }

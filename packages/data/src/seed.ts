@@ -134,7 +134,6 @@ export function seedAccounts(): Account[] {
       seats: 14,
       mrr: fromDollars(299 + 4 * 19),
       createdAt: daysAgo(61),
-      activatedAt: daysAgo(34),
       creditBalance: fromDollars(0),
     },
     {
@@ -148,7 +147,6 @@ export function seedAccounts(): Account[] {
       seats: 31,
       mrr: fromDollars(899 + 6 * 25),
       createdAt: daysAgo(418),
-      activatedAt: daysAgo(405),
       creditBalance: fromDollars(0),
     },
     {
@@ -162,7 +160,6 @@ export function seedAccounts(): Account[] {
       seats: 9,
       mrr: fromDollars(299),
       createdAt: daysAgo(203),
-      activatedAt: daysAgo(190),
       creditBalance: fromDollars(45),
     },
     {
@@ -191,7 +188,6 @@ export function seedAccounts(): Account[] {
       seats: 3,
       mrr: fromDollars(49),
       createdAt: daysAgo(88),
-      activatedAt: daysAgo(80),
       creditBalance: fromDollars(0),
     },
     {
@@ -206,7 +202,6 @@ export function seedAccounts(): Account[] {
       seats: 22,
       mrr: fromDollars(299 + 12 * 19),
       createdAt: daysAgo(154),
-      activatedAt: daysAgo(141),
       creditBalance: fromDollars(0),
     },
     {
@@ -220,7 +215,6 @@ export function seedAccounts(): Account[] {
       seats: 140,
       mrr: fromDollars(2400),
       createdAt: daysAgo(602),
-      activatedAt: daysAgo(588),
       creditBalance: fromDollars(1200),
     },
     {
@@ -234,8 +228,50 @@ export function seedAccounts(): Account[] {
       seats: 26,
       mrr: fromDollars(899 + 1 * 25),
       createdAt: daysAgo(271),
-      activatedAt: daysAgo(254),
       creditBalance: fromDollars(0),
+    },
+    {
+      // Signed up this week. Nothing connected yet.
+      id: 'acc_verge',
+      companyName: 'Verge Robotics',
+      contactName: 'Yuki Tanaka',
+      contactEmail: 'yuki@verge.example',
+      planId: 'starter',
+      billingInterval: 'monthly',
+      status: 'trial',
+      seats: 2,
+      mrr: fromDollars(49),
+      createdAt: daysAgo(3),
+      creditBalance: fromDollars(0),
+    },
+    {
+      // Connected a source and then stopped. The stalled case.
+      id: 'acc_tidewater',
+      companyName: 'Tidewater Freight',
+      contactName: 'Greg Mbeki',
+      contactEmail: 'greg@tidewater.example',
+      planId: 'growth',
+      billingInterval: 'monthly',
+      status: 'trial',
+      seats: 6,
+      mrr: fromDollars(299),
+      createdAt: daysAgo(16),
+      creditBalance: fromDollars(0),
+    },
+    {
+      // Built a rule and never looked at what it returned. Configured, not
+      // activated — the distinction this build exists to hold.
+      id: 'acc_pellon',
+      companyName: 'Pellon Group',
+      contactName: 'Hanne Vos',
+      contactEmail: 'hanne@pellon.example',
+      planId: 'starter',
+      billingInterval: 'monthly',
+      status: 'trial',
+      seats: 3,
+      mrr: fromDollars(49),
+      creditBalance: fromDollars(0),
+      createdAt: daysAgo(9),
     },
   ];
 }
@@ -254,6 +290,9 @@ const USAGE_PROFILE: Record<string, { baseline: number; trend: number }> = {
   acc_fieldstack: { baseline: 0.058, trend: 0.11 }, // consistently over
   acc_brightpay: { baseline: 0.02, trend: 0.0 },
   acc_monolith: { baseline: 0.029, trend: -0.03 },
+  acc_verge: { baseline: 0.0004, trend: 0 },
+  acc_tidewater: { baseline: 0.003, trend: -0.4 },
+  acc_pellon: { baseline: 0.001, trend: 0 },
 };
 
 const DAYS_OF_USAGE = 60;
@@ -341,6 +380,120 @@ function hashString(value: string): number {
   return hash >>> 0;
 }
 
+
+// ---------------------------------------------------------------------------
+// Activation
+// ---------------------------------------------------------------------------
+
+/**
+ * Where each account sits on the activation path, expressed as the days ago
+ * each step was completed. Every account is placed deliberately so the cohort
+ * has a real distribution rather than one healthy shape repeated.
+ *
+ * `returns` are extra days the account came back to the list after
+ * activating; three distinct days inside a fortnight is what makes a habit.
+ */
+const ACTIVATION_PATH: Record<
+  string,
+  Partial<Record<'source_connected' | 'team_invited' | 'billing_added' | 'rule_created' | 'list_viewed', number>> & {
+    returns?: number[];
+  }
+> = {
+  // Just signed up. Nothing done.
+  acc_verge: {},
+
+  // Connected and then stopped, two weeks ago. Stalled.
+  acc_tidewater: { source_connected: 14 },
+
+  // Finished every step the product nags about and never reached value.
+  // The state a completion-rate dashboard reports as a success.
+  acc_slate_labs: { source_connected: 11, team_invited: 10, billing_added: 9 },
+
+  // Built a rule, never looked at what it returned.
+  acc_pellon: { source_connected: 8, team_invited: 8, rule_created: 5 },
+
+  // Activated, no habit — which is consistent with its usage falling away.
+  [HERO_ACCOUNT_ID]: {
+    source_connected: 58, team_invited: 57, billing_added: 56,
+    rule_created: 35, list_viewed: 34,
+  },
+
+  acc_kora: {
+    source_connected: 85, team_invited: 84, billing_added: 84,
+    rule_created: 81, list_viewed: 80,
+  },
+  acc_monolith: {
+    source_connected: 266, team_invited: 265, billing_added: 265,
+    rule_created: 255, list_viewed: 254,
+  },
+
+  // Activated and returning.
+  acc_northstar: {
+    source_connected: 415, team_invited: 414, billing_added: 414,
+    rule_created: 406, list_viewed: 405, returns: [403, 401],
+  },
+  acc_loomline: {
+    source_connected: 200, team_invited: 199, billing_added: 199,
+    rule_created: 191, list_viewed: 190, returns: [188, 185],
+  },
+  acc_fieldstack: {
+    source_connected: 151, team_invited: 150, billing_added: 150,
+    rule_created: 142, list_viewed: 141, returns: [139, 136],
+  },
+  acc_brightpay: {
+    source_connected: 599, team_invited: 598, billing_added: 598,
+    rule_created: 589, list_viewed: 588, returns: [586, 583],
+  },
+};
+
+const STEP_SUMMARY: Record<string, string> = {
+  source_connected: 'Connected a data source',
+  team_invited: 'Invited a teammate',
+  billing_added: 'Added billing details',
+  rule_created: 'Created their first account health rule',
+  list_viewed: 'Viewed the accounts the rule returned',
+};
+
+/**
+ * Activation steps as events. Nothing stores an activation flag; the state is
+ * derived from these by `deriveActivation`, which is the whole point.
+ */
+export function seedActivationEvents(): AccountEvent[] {
+  const events: AccountEvent[] = [];
+
+  for (const [accountId, path] of Object.entries(ACTIVATION_PATH)) {
+    const { returns = [], ...steps } = path;
+
+    for (const [step, days] of Object.entries(steps)) {
+      if (days === undefined) continue;
+      events.push({
+        id: `ev_act_${accountId}_${step}`,
+        accountId,
+        // The activation event itself is typed `activation`; the rest are steps.
+        type: step === 'list_viewed' ? 'activation' : 'activation_step',
+        occurredAt: daysAgo(days, 4),
+        severity: 'info',
+        summary: STEP_SUMMARY[step] ?? step,
+        payload: { step },
+      });
+    }
+
+    returns.forEach((days, i) => {
+      events.push({
+        id: `ev_act_${accountId}_return_${i}`,
+        accountId,
+        type: 'activation_step',
+        occurredAt: daysAgo(days, 4),
+        severity: 'info',
+        summary: 'Returned to the account list',
+        payload: { step: 'list_viewed' },
+      });
+    });
+  }
+
+  return events;
+}
+
 // ---------------------------------------------------------------------------
 // Account events
 // ---------------------------------------------------------------------------
@@ -353,15 +506,6 @@ function hashString(value: string): number {
 export function seedAccountEvents(): AccountEvent[] {
   const events: AccountEvent[] = [
     // ---- Orbit Health: the hero narrative --------------------------------
-    {
-      id: 'ev_orbit_1',
-      accountId: HERO_ACCOUNT_ID,
-      type: 'activation',
-      occurredAt: daysAgo(34),
-      severity: 'info',
-      summary: 'Created first account health rule and viewed the resulting list',
-      payload: { ruleName: 'Enterprise accounts at risk' },
-    },
     {
       id: 'ev_orbit_2',
       accountId: HERO_ACCOUNT_ID,
@@ -422,24 +566,6 @@ export function seedAccountEvents(): AccountEvent[] {
 
     // ---- Slate Labs: onboarding done, not activated ----------------------
     {
-      id: 'ev_slate_1',
-      accountId: 'acc_slate_labs',
-      type: 'activation_step',
-      occurredAt: daysAgo(11),
-      severity: 'info',
-      summary: 'Connected a data source',
-      payload: { step: 'connected' },
-    },
-    {
-      id: 'ev_slate_2',
-      accountId: 'acc_slate_labs',
-      type: 'activation_step',
-      occurredAt: daysAgo(10),
-      severity: 'info',
-      summary: 'Invited three teammates',
-      payload: { step: 'configured' },
-    },
-    {
       id: 'ev_slate_3',
       accountId: 'acc_slate_labs',
       type: 'note',
@@ -490,7 +616,7 @@ export function seedAccountEvents(): AccountEvent[] {
     },
   ];
 
-  return events;
+  return [...events, ...seedActivationEvents()];
 }
 
 // ---------------------------------------------------------------------------

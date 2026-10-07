@@ -10,6 +10,7 @@ export {
   seedAccountEvents,
   seedAccounts,
   seedPlans,
+  seedActivationEvents,
   seedUsageEvents,
   seedWorld,
   type World,

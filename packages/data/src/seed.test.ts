@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { deriveActivation, summariseCohort } from '@headroom/domain';
 import { HERO_ACCOUNT_ID, REFERENCE_NOW, seedWorld } from './seed';
 
 /**
@@ -73,24 +74,50 @@ describe('money is always whole cents', () => {
   });
 });
 
-describe('activation is consistent with status', () => {
+describe('activation is derived, never stored', () => {
   const world = seedWorld();
+  const stateOf = (id: string) =>
+    deriveActivation({
+      accountId: id,
+      createdAt: world.accounts.find((a) => a.id === id)!.createdAt,
+      events: world.accountEvents,
+      asOf: REFERENCE_NOW,
+    });
 
-  it('only trial accounts may lack an activation date', () => {
+  it('exposes no stored activation flag on the account record', () => {
     for (const account of world.accounts) {
-      if (!account.activatedAt) {
-        expect(account.status).toBe('trial');
-      }
+      expect(account).not.toHaveProperty('activatedAt');
     }
   });
 
   it('never activates an account before it was created', () => {
     for (const account of world.accounts) {
-      if (!account.activatedAt) continue;
-      expect(new Date(account.activatedAt).getTime()).toBeGreaterThanOrEqual(
+      const state = stateOf(account.id);
+      if (!state.activatedAt) continue;
+      expect(new Date(state.activatedAt).getTime()).toBeGreaterThanOrEqual(
         new Date(account.createdAt).getTime(),
       );
     }
+  });
+
+  it('leaves only trial accounts unactivated', () => {
+    for (const account of world.accounts) {
+      if (!stateOf(account.id).activated) expect(account.status).toBe('trial');
+    }
+  });
+
+  it('spreads the cohort across stages rather than bunching at one', () => {
+    const cohort = summariseCohort(world.accounts.map((a) => stateOf(a.id)));
+    const occupied = Object.values(cohort.byStage).filter((n) => n > 0).length;
+    // A cohort sitting in one or two stages cannot demonstrate a funnel.
+    expect(occupied).toBeGreaterThanOrEqual(4);
+    expect(cohort.total).toBe(world.accounts.length);
+  });
+
+  it('includes at least one stalled account and one that finished onboarding without activating', () => {
+    const cohort = summariseCohort(world.accounts.map((a) => stateOf(a.id)));
+    expect(cohort.stalled).toBeGreaterThanOrEqual(1);
+    expect(cohort.onboardedButNotActivated).toBeGreaterThanOrEqual(1);
   });
 });
 
@@ -98,9 +125,18 @@ describe('Slate Labs — onboarding complete but not activated', () => {
   const world = seedWorld();
   const slate = world.accounts.find((a) => a.id === 'acc_slate_labs');
 
-  it('exists and has no activation date', () => {
+  it('finished every step the product nags about and still reached nothing', () => {
     expect(slate).toBeDefined();
-    expect(slate?.activatedAt).toBeUndefined();
+    const state = deriveActivation({
+      accountId: 'acc_slate_labs',
+      createdAt: slate!.createdAt,
+      events: world.accountEvents,
+      asOf: REFERENCE_NOW,
+    });
+    // The state the whole build exists to make visible.
+    expect(state.checklistComplete).toBe(true);
+    expect(state.activated).toBe(false);
+    expect(state.onboardedButNotActivated).toBe(true);
   });
 
   it('has completed setup steps despite not being activated', () => {
@@ -127,9 +163,15 @@ describe('Orbit Health — the hero narrative', () => {
     expect(orbit?.status).toBe('past_due');
   });
 
-  it('activated 34 days before the reference date', () => {
-    const activatedAt = new Date(orbit!.activatedAt!).getTime();
-    const days = (REFERENCE_NOW.getTime() - activatedAt) / 86_400_000;
+  it('activated 34 days before the reference date, derived from its events', () => {
+    const state = deriveActivation({
+      accountId: HERO_ACCOUNT_ID,
+      createdAt: orbit!.createdAt,
+      events: world.accountEvents,
+      asOf: REFERENCE_NOW,
+    });
+    expect(state.activated).toBe(true);
+    const days = (REFERENCE_NOW.getTime() - new Date(state.activatedAt!).getTime()) / 86_400_000;
     expect(Math.round(days)).toBe(34);
   });
 

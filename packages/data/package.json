@@ -11,10 +11,8 @@
     "test": "vitest run --passWithNoTests"
   },
   "devDependencies": {
+    "@headroom/domain": "workspace:*",
     "typescript": "^5",
     "vitest": "^3"
-  },
-  "dependencies": {
-    "@headroom/domain": "workspace:*"
   }
 }
