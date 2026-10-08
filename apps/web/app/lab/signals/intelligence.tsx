@@ -4,16 +4,20 @@ import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import {
   Badge,
+  BandScale,
   Callout,
   Card,
   CardHeader,
+  Distribution,
   Metric,
+  type ScaleBand,
   Timeline,
   type TimelineItem,
   type TimelineTone,
 } from '@headroom/ui';
 import {
   type AccountEvent,
+  BANDS,
   calculateHealth,
   deriveActivation,
   detectSignals,
@@ -38,6 +42,26 @@ const BAND_TONE: Record<HealthBand, 'success' | 'warning' | 'danger' | 'neutral'
   at_risk: 'warning',
   critical: 'danger',
 };
+
+/**
+ * The health bands as a scale, taken from the domain's own thresholds rather
+ * than restated here, so the picture cannot drift from the scoring.
+ */
+const SCALE_BANDS: ScaleBand[] = [...BANDS]
+  .sort((a, b) => a.min - b.min)
+  .map((b) => ({
+    id: b.band,
+    label: b.band === 'at_risk' ? 'At risk' : b.band[0]!.toUpperCase() + b.band.slice(1),
+    min: b.min,
+    tone:
+      b.band === 'critical'
+        ? ('danger' as const)
+        : b.band === 'at_risk'
+          ? ('warning' as const)
+          : b.band === 'watch'
+            ? ('neutral' as const)
+            : ('success' as const),
+  }));
 
 const SEVERITY_TONE: Record<Severity, 'info' | 'warning' | 'danger'> = {
   info: 'info',
@@ -109,6 +133,21 @@ export function Intelligence() {
         activation,
         asOf: REFERENCE_NOW,
       }),
+    [activation],
+  );
+
+  /** Every account's current score, so the book can be shown by band. */
+  const allScores = useMemo(
+    () =>
+      world.accounts.map((a) =>
+        calculateHealth({
+          accountId: a.id,
+          events: world.accountEvents,
+          usage: world.usageEvents.filter((u) => u.accountId === a.id),
+          activation: activation.get(a.id)!,
+          asOf: REFERENCE_NOW,
+        }),
+      ),
     [activation],
   );
 
@@ -257,6 +296,26 @@ export function Intelligence() {
 
           <Card>
             <CardHeader
+              title="Where the book sits"
+              headingLevel={2}
+              description="Accounts by health band. Bands are score ranges, not categories."
+            />
+            <Distribution
+              className="mt-4"
+              label="Accounts by health band"
+              segments={SCALE_BANDS.map((b) => ({
+                id: b.id,
+                label: b.label,
+                value: allScores.filter((s) => s.band === b.id).length,
+                emphasis: b.id === now.band,
+                // Same colours as the scale above it. One encoding per idea.
+                tone: b.tone,
+              }))}
+            />
+          </Card>
+
+          <Card>
+            <CardHeader
               title="How these are produced"
               headingLevel={2}
               description="So the number is auditable rather than trusted."
@@ -298,6 +357,12 @@ export function Intelligence() {
                 {...(trend ? { trend: trend.changePercent >= 0 ? ('up' as const) : ('down' as const) } : {})}
               />
             </div>
+
+            <BandScale
+              value={now.score}
+              bands={SCALE_BANDS}
+              label={`Health score for ${account.companyName}`}
+            />
 
             {change.delta !== 0 ? (
               <button

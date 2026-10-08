@@ -46,6 +46,12 @@ export {
   type NavItem,
 } from './components/app-shell';
 
+export {
+  BandScale,
+  type BandScaleProps,
+  type ScaleBand,
+} from './components/band-scale';
+
 export { Skeleton, SkeletonText, type SkeletonProps } from './components/skeleton';
 
 export {

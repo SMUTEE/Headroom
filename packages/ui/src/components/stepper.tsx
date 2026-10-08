@@ -132,6 +132,15 @@ export interface DistributionSegment {
   value: number;
   /** Highlights this segment as the one under discussion. */
   emphasis?: boolean;
+  /**
+   * Overrides the sequential scale for this segment.
+   *
+   * The sequential scale is right for stages that are merely ordered, like an
+   * activation funnel. It is wrong for categories carrying their own
+   * convention: a health band called "critical" has to be red, and rendering
+   * it as step one of a violet ramp fights what the reader already knows.
+   */
+  tone?: 'danger' | 'warning' | 'neutral' | 'success';
 }
 
 /**
@@ -159,6 +168,11 @@ export function Distribution({
 }) {
   const total = segments.reduce((sum, s) => sum + s.value, 0);
 
+  const fillFor = (s: DistributionSegment, i: number) =>
+    s.tone
+      ? `var(--color-${s.tone === 'neutral' ? 'bg-component-active' : `${s.tone}-solid`})`
+      : `var(--color-scale-${Math.min(i + 1, 5)})`;
+
   return (
     <div className={className}>
       <div
@@ -177,7 +191,7 @@ export function Distribution({
             key={s.id}
             className="h-full rounded-xs"
             style={{
-              backgroundColor: `var(--color-scale-${Math.min(i + 1, 5)})`,
+              backgroundColor: fillFor(s, i),
               width: total === 0 ? '0%' : `${(s.value / total) * 100}%`,
             }}
           />
@@ -190,7 +204,7 @@ export function Distribution({
             <span
               aria-hidden
               className="size-2.5 shrink-0 rounded-xs"
-              style={{ backgroundColor: `var(--color-scale-${Math.min(i + 1, 5)})` }}
+              style={{ backgroundColor: fillFor(s, i) }}
             />
             <span
               className={cn(
