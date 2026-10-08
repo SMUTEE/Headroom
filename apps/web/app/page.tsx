@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ThemeToggle } from '@headroom/ui';
+import { Credit } from './_me/credit';
 
 export const metadata: Metadata = {
   title: 'Segun Akinnibosun — product engineering',
@@ -222,11 +223,9 @@ export default function Home() {
             >
               Start a conversation
             </a>
-            {/* Shown as selectable text as well: mail links do not always work
-                inside embedded viewers, and a dead button is worse than none. */}
-            <span className="text-body-sm text-text-secondary">
-              akinnibosun50@gmail.com
-            </span>
+            {/* The same card as my other projects, so the three read as one
+                person's work rather than three unrelated things. */}
+            <Credit />
             <a
               href="https://github.com/SMUTEE/Headroom"
               className="text-body-sm text-accent-text underline underline-offset-4"

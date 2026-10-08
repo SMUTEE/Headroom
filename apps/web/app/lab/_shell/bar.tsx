@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { ThemeToggle } from '@headroom/ui';
+import { Credit } from '../../_me/credit';
 
 /**
  * The top-right of every product page.
@@ -30,14 +31,16 @@ export function OperatorBar() {
  */
 export function OperatorFooter() {
   return (
-    <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
-      <p className="text-metadata text-text-secondary">
-        A lab by{' '}
-        <Link href="/" className="text-accent-text underline underline-offset-4">
-          Segun Akinnibosun
-        </Link>
-        . Everything here is synthetic.
-      </p>
+    <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+        <Credit />
+        <span className="text-metadata text-text-secondary">
+          Everything here is synthetic.{' '}
+          <Link href="/" className="text-accent-text underline underline-offset-4">
+            See the rest
+          </Link>
+        </span>
+      </div>
       <a
         href="https://github.com/SMUTEE/Headroom"
         className="text-metadata text-text-secondary underline underline-offset-4 hover:text-text-primary"
