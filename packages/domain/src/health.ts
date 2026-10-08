@@ -230,7 +230,9 @@ export interface HealthChange {
   /** Contributions that appeared, vanished or moved, largest effect first. */
   causes: Array<{
     label: string;
-    eventId?: string;
+    // Explicitly `| undefined`: this package runs exactOptionalPropertyTypes,
+    // which distinguishes an absent key from one present and undefined.
+    eventId?: string | undefined;
     before: number | null;
     after: number | null;
     delta: number;
