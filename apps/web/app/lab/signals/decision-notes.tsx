@@ -32,6 +32,18 @@ export function SignalNotes() {
               been validated against an outcome and a number like that would be invented
               confidence. Thresholds are stated instead, so a reader can disagree with them.
             </Note>
+            <Note term="Where the loop closes">
+              Signal to evidence to interpretation is only three quarters of a surface. The
+              action here is triage rather than intervention: acknowledge it, or dismiss it and
+              say why. Approving a retention offer, persisting it and writing an audit event is
+              a different build, and pretending otherwise would be the easy lie.
+            </Note>
+            <Note term="Why dismissal needs a reason">
+              A list that can be cleared silently gets cleared silently. More usefully, the
+              reasons are the only feedback the rules ever get: several dismissals of one kind
+              as too sensitive is a report about that threshold, not noise to absorb. A signal
+              list nobody trusts is worse than no list at all.
+            </Note>
             <Note term="The trade-off">
               Scoring ignores risk-signal events, even though they look like the most relevant
               thing in the stream. They are emitted because health already fell, so counting
@@ -89,6 +101,10 @@ export function SignalNotes() {
           <li>
             Showing uncertainty in the interface is not the same as handling bad data upstream.
             This marks a missing decline reason; it does not reconcile the ledger.
+          </li>
+          <li>
+            Triage is not saved. It lives for the length of a visit, because persistence and an
+            audit trail belong to the operator console.
           </li>
         </ul>
       </section>

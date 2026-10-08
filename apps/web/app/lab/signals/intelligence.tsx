@@ -5,6 +5,7 @@ import Link from 'next/link';
 import {
   Badge,
   BandScale,
+  Button,
   Callout,
   Card,
   CardHeader,
@@ -25,7 +26,11 @@ import {
   type HealthBand,
   type Severity,
   type Signal,
+  summariseTriage,
+  type TriageEntry,
   usageTrend,
+  DISMISSAL_REASONS,
+  dispositionOf,
 } from '@headroom/domain';
 import { REFERENCE_NOW, seedWorld } from '@headroom/data';
 
@@ -106,6 +111,10 @@ function incompletenessOf(event: AccountEvent): string | undefined {
 export function Intelligence() {
   const [selectedId, setSelectedId] = useState<string>('acc_orbit_health');
   const [showCauses, setShowCauses] = useState(false);
+  // Session only. Persisting a decision and writing an audit event is the
+  // operator console's job, and the surface says so rather than implying it.
+  const [triage, setTriage] = useState<TriageEntry[]>([]);
+  const [dismissing, setDismissing] = useState<string | null>(null);
 
   const activation = useMemo(
     () =>
@@ -150,6 +159,10 @@ export function Intelligence() {
       ),
     [activation],
   );
+
+  const worked = useMemo(() => summariseTriage(signals, triage), [signals, triage]);
+  const openSignals = signals.filter((x) => dispositionOf(x.id, triage) === 'open');
+  const closedSignals = signals.filter((x) => dispositionOf(x.id, triage) !== 'open');
 
   const account = world.accounts.find((a) => a.id === selectedId)!;
   const accountUsage = useMemo(
@@ -222,6 +235,20 @@ export function Intelligence() {
     });
   }, [selectedId, change, causeEventIds, showCauses]);
 
+  function record(signal: Signal, disposition: 'acknowledged' | 'dismissed', reasonId?: string) {
+    setTriage((prev) => [
+      ...prev.filter((e) => e.signalId !== signal.id),
+      {
+        signalId: signal.id,
+        kind: signal.kind,
+        disposition,
+        ...(reasonId ? { reasonId } : {}),
+        at: REFERENCE_NOW.toISOString(),
+      },
+    ]);
+    setDismissing(null);
+  }
+
   function openSignal(signal: Signal) {
     setSelectedId(signal.accountIds[0]!);
     setShowCauses(true);
@@ -244,12 +271,16 @@ export function Intelligence() {
               <CardHeader
                 title="What deserves attention"
                 headingLevel={2}
-                description={`${signals.length} signals, most severe first. Every threshold is a stated rule, not a prediction.`}
+                description={
+                  worked.worked === 0
+                    ? `${signals.length} signals, most severe first. Every threshold is a stated rule, not a prediction.`
+                    : `${worked.open} left of ${worked.total}. ${worked.acknowledged} acknowledged, ${worked.dismissed} dismissed.`
+                }
               />
             </div>
 
             <ul className="flex flex-col">
-              {signals.map((signal) => {
+              {openSignals.map((signal) => {
                 const active = signal.accountIds.includes(selectedId);
                 return (
                   <li key={signal.id} className="border-t border-border-subtle">
@@ -288,11 +319,106 @@ export function Intelligence() {
                         ) : null}
                       </span>
                     </button>
+
+                    <div className="flex flex-wrap items-center gap-2 px-4 pb-3">
+                      <Button size="sm" onClick={() => record(signal, 'acknowledged')}>
+                        Acknowledge
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => setDismissing(dismissing === signal.id ? null : signal.id)}
+                        aria-expanded={dismissing === signal.id}
+                      >
+                        Dismiss
+                      </Button>
+                    </div>
+
+                    {dismissing === signal.id ? (
+                      <div className="border-t border-border-subtle bg-bg-component px-4 py-3">
+                        {/* A reason is required. A list that can be cleared
+                            silently gets cleared silently, and the reasons are
+                            the only feedback the rules ever get. */}
+                        <p className="text-label text-text-primary">Why are you dismissing this?</p>
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          {DISMISSAL_REASONS.map((reason) => (
+                            <Button
+                              key={reason.id}
+                              size="sm"
+                              variant="secondary"
+                              onClick={() => record(signal, 'dismissed', reason.id)}
+                            >
+                              {reason.label}
+                            </Button>
+                          ))}
+                        </div>
+                      </div>
+                    ) : null}
                   </li>
                 );
               })}
+
+              {openSignals.length === 0 ? (
+                <li className="border-t border-border-subtle px-4 py-8 text-center">
+                  <p className="text-label text-text-primary">Nothing left to work</p>
+                  <p className="mt-1 text-metadata text-text-secondary">
+                    All {worked.total} signals have been acknowledged or dismissed.
+                  </p>
+                </li>
+              ) : null}
             </ul>
           </Card>
+
+          {worked.rulesUnderQuestion.length > 0 ? (
+            <Callout
+              tone="warning"
+              title="Some of these rules are being dismissed as wrong"
+            >
+              {worked.rulesUnderQuestion
+                .map((r) => `${r.kind.replace(/_/g, ' ')} (${r.count})`)
+                .join(', ')}
+              . Repeated dismissals of one rule are a report about its threshold rather than
+              noise to absorb. A signal list nobody trusts is worse than no list.
+            </Callout>
+          ) : null}
+
+          {closedSignals.length > 0 ? (
+            <Card>
+              <CardHeader
+                title="Worked"
+                headingLevel={2}
+                description="Kept visible. Clearing something should not hide that you cleared it."
+              />
+              <ul className="mt-3 flex flex-col gap-2">
+                {closedSignals.map((signal) => {
+                  const entry = triage.find((e) => e.signalId === signal.id)!;
+                  const reason = DISMISSAL_REASONS.find((r) => r.id === entry.reasonId);
+                  return (
+                    <li
+                      key={signal.id}
+                      className="flex flex-wrap items-baseline justify-between gap-2 border-b border-border-subtle pb-2 last:border-0"
+                    >
+                      <span className="text-metadata text-text-secondary line-through">
+                        {signal.headline}
+                      </span>
+                      <span className="flex items-center gap-2">
+                        <Badge tone={entry.disposition === 'acknowledged' ? 'success' : 'neutral'}>
+                          {entry.disposition === 'acknowledged' ? 'Acknowledged' : 'Dismissed'}
+                        </Badge>
+                        {reason ? (
+                          <span className="text-metadata text-text-disabled">{reason.label}</span>
+                        ) : null}
+                      </span>
+                    </li>
+                  );
+                })}
+              </ul>
+              <p className="mt-3 text-metadata text-text-disabled">
+                Not saved. Persisting a decision and writing an audit event belongs to the
+                operator console.
+              </p>
+            </Card>
+          ) : null}
 
           <Card>
             <CardHeader
