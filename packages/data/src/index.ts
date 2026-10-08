@@ -15,3 +15,5 @@ export {
   seedWorld,
   type World,
 } from './seed';
+
+export { SAVED_ASSESSMENTS, savedAssessmentFor } from './assessments';

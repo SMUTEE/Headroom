@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { deriveActivation, summariseCohort } from '@headroom/domain';
+import {
+  AccountAssessmentSchema,
+  checkAssessment,
+  deriveActivation,
+  summariseCohort,
+} from '@headroom/domain';
+import { SAVED_ASSESSMENTS } from './assessments';
 import { HERO_ACCOUNT_ID, REFERENCE_NOW, seedWorld } from './seed';
 
 /**
@@ -271,5 +277,43 @@ describe('Fieldstack — the expansion case', () => {
     const monthUnits = sorted.slice(-30).reduce((sum, e) => sum + e.units, 0);
 
     expect(monthUnits).toBeGreaterThan(plan.includedUnits);
+  });
+});
+
+describe('saved assessments stay valid against the schema and the guards', () => {
+  const world = seedWorld();
+
+  it('every saved assessment parses', () => {
+    for (const [id, saved] of Object.entries(SAVED_ASSESSMENTS)) {
+      const result = AccountAssessmentSchema.safeParse(saved);
+      expect(result.success, `${id} failed the schema`).toBe(true);
+    }
+  });
+
+  it('every saved assessment cites only events that exist', () => {
+    // These ship as demo output, so they answer to the same grounding rule the
+    // model does. A hand-written assessment citing a missing event would be the
+    // same lie, told more slowly.
+    const known = new Set(world.accountEvents.map((e) => e.id));
+    for (const [id, saved] of Object.entries(SAVED_ASSESSMENTS)) {
+      const failures = checkAssessment(saved, known);
+      expect(failures, `${id}: ${failures.map((f) => f.detail).join('; ')}`).toHaveLength(0);
+    }
+  });
+
+  it('is written for accounts that exist', () => {
+    const ids = new Set(world.accounts.map((a) => a.id));
+    for (const id of Object.keys(SAVED_ASSESSMENTS)) expect(ids.has(id)).toBe(true);
+  });
+
+  it('includes one that declines, so the demo shows the model saying no', () => {
+    const declines = Object.values(SAVED_ASSESSMENTS).filter(
+      (a) => a.health === 'insufficient_evidence',
+    );
+    expect(declines.length).toBeGreaterThanOrEqual(1);
+    for (const d of declines) {
+      expect(d.confidence).toBeLessThanOrEqual(0.4);
+      expect(d.risks).toHaveLength(0);
+    }
   });
 });
