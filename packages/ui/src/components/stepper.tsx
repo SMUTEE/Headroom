@@ -166,17 +166,16 @@ export function Distribution({
         aria-label={`${label}. ${segments
           .map((s) => `${s.label}: ${s.value}`)
           .join('. ')}. ${total} in total.`}
-        className="flex h-2.5 w-full gap-0.5"
+        className="flex h-3 w-full gap-0.5"
       >
+        {/* No marker on the emphasised segment. A ring around one block in a
+            10px bar reads as a form field, and any second colour would
+            overwrite the order the scale is encoding. The legend carries the
+            emphasis instead, where there is room for it. */}
         {segments.map((s, i) => (
           <span
             key={s.id}
-            className={cn(
-              'h-full rounded-xs',
-              // Emphasis is a ring, not a different fill: swapping the colour
-              // would break the one thing the scale is encoding.
-              s.emphasis && 'ring-2 ring-text-primary ring-offset-1 ring-offset-bg-surface',
-            )}
+            className="h-full rounded-xs"
             style={{
               backgroundColor: `var(--color-scale-${Math.min(i + 1, 5)})`,
               width: total === 0 ? '0%' : `${(s.value / total) * 100}%`,
@@ -196,7 +195,7 @@ export function Distribution({
             <span
               className={cn(
                 'text-metadata',
-                s.emphasis ? 'text-text-primary' : 'text-text-secondary',
+                s.emphasis ? 'font-medium text-text-primary' : 'text-text-secondary',
               )}
             >
               {s.label}

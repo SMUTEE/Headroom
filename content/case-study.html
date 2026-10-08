@@ -5,11 +5,11 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;450;500;600&display=swap">
 
 <style>
-  /* Layout: a measured reading column, with figures breaking out wider than the
-     text. Rules are used as measurement marks, which is what the subject is about. */
+  /* Layout: a measured reading column, with figures breaking out wider than
+     the text. Rules mark sections rather than decorate them. */
   :root {
-    /* Palette lifted from the product's own generated tokens: cool neutrals
-       carrying a trace of the accent hue, violet accent at the solid-fill step. */
+    /* Palette taken from the product's own generated tokens: cool neutrals
+       carrying a trace of the accent hue, violet accent at the solid step. */
     --paper: oklch(0.993 0.001 282);
     --surface: oklch(0.976 0.003 282);
     --ink: oklch(0.26 0.012 282);
@@ -19,7 +19,6 @@
     --rule-firm: oklch(0.82 0.006 282);
     --accent: oklch(0.545 0.21 285);
     --accent-wash: oklch(0.955 0.015 285);
-    --flag: oklch(0.52 0.17 25);
 
     --display: "Newsreader", ui-serif, Georgia, serif;
     --body: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
@@ -37,7 +36,6 @@
       --rule-firm: oklch(0.42 0.013 282);
       --accent: oklch(0.72 0.16 285);
       --accent-wash: oklch(0.24 0.035 285);
-      --flag: oklch(0.7 0.15 25);
       color-scheme: dark;
     }
   }
@@ -52,7 +50,6 @@
     --rule-firm: oklch(0.42 0.013 282);
     --accent: oklch(0.72 0.16 285);
     --accent-wash: oklch(0.24 0.035 285);
-    --flag: oklch(0.7 0.15 25);
     color-scheme: dark;
   }
 
@@ -62,23 +59,22 @@
     background: var(--paper);
     color: var(--ink);
     font-family: var(--body);
-    font-size: 1rem;
-    line-height: 1.65;
+    font-size: 1.02rem;
+    line-height: 1.68;
     margin: 0;
     -webkit-font-smoothing: antialiased;
   }
 
   .wrap {
-    max-width: 78rem;
+    max-width: 74rem;
     margin: 0 auto;
     padding-inline: 1.5rem;
     padding-block: 3.5rem 6rem;
   }
 
-  /* The reading column. Figures break out of it. */
-  .col { max-width: 38rem; }
+  .col { max-width: 37rem; }
 
-  h1, h2, h3 { font-family: var(--display); font-weight: 400; text-wrap: balance; margin: 0; }
+  h1, h2 { font-family: var(--display); font-weight: 400; text-wrap: balance; margin: 0; }
 
   .eyebrow {
     font-family: var(--data);
@@ -89,55 +85,40 @@
     margin: 0;
   }
 
-  /* ---- Masthead ---- */
   .masthead { border-bottom: 1px solid var(--rule-firm); padding-bottom: 2.5rem; }
   .masthead h1 {
-    font-size: clamp(2.6rem, 6vw, 4.2rem);
-    line-height: 1.02;
+    font-size: clamp(2.4rem, 5.5vw, 3.6rem);
+    line-height: 1.06;
     letter-spacing: -0.025em;
-    margin-top: 0.75rem;
+    margin-top: 0.8rem;
   }
-  .masthead .lede {
-    font-size: 1.14rem;
-    color: var(--ink-soft);
-    margin: 1.5rem 0 0;
-    max-width: 34rem;
-  }
+  .masthead .lede { font-size: 1.1rem; color: var(--ink-soft); margin: 1.4rem 0 0; }
 
   .meta {
     display: flex;
     flex-wrap: wrap;
-    gap: 0 2.5rem;
-    margin-top: 2.25rem;
+    gap: 0.5rem 2.5rem;
+    margin-top: 2rem;
     font-family: var(--data);
     font-size: 0.78rem;
     color: var(--ink-faint);
   }
-  .meta div { display: flex; flex-direction: column; gap: 0.15rem; }
-  .meta b { color: var(--ink); font-weight: 500; font-variant-numeric: tabular-nums; }
-  .meta a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+  .meta a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 3px; }
 
-  /* ---- Sections ---- */
-  section { margin-top: 4.5rem; }
+  section { margin-top: 4.25rem; }
   section > .col > h2 {
-    font-size: clamp(1.7rem, 3.4vw, 2.3rem);
-    line-height: 1.15;
+    font-size: clamp(1.6rem, 3.2vw, 2.1rem);
+    line-height: 1.18;
     letter-spacing: -0.02em;
-    margin-top: 0.6rem;
+    margin-top: 0.55rem;
   }
-  p { margin: 1.15rem 0 0; }
-  .col p:first-of-type { margin-top: 1.35rem; }
+  p { margin: 1.1rem 0 0; }
+  .col p:first-of-type { margin-top: 1.3rem; }
   strong { font-weight: 600; }
 
-  /* A rule that counts, rather than decorates. */
-  .tick {
-    border: 0;
-    border-top: 1px solid var(--rule);
-    margin: 3.5rem 0 0;
-  }
+  hr.tick { border: 0; border-top: 1px solid var(--rule); margin: 3.5rem 0 0; }
 
-  /* ---- Figures ---- */
-  figure { margin: 2.5rem 0 0; }
+  figure { margin: 2.4rem 0 0; }
   figure img {
     display: block;
     width: 100%;
@@ -148,31 +129,29 @@
   }
   figcaption {
     font-family: var(--data);
-    font-size: 0.76rem;
-    line-height: 1.55;
+    font-size: 0.75rem;
+    line-height: 1.6;
     color: var(--ink-faint);
     margin-top: 0.7rem;
-    max-width: 44rem;
+    max-width: 42rem;
   }
-  figcaption b { color: var(--ink-soft); font-weight: 500; }
 
-  /* ---- Recording slot ---- */
   .slot {
-    margin: 2.5rem 0 0;
+    margin: 2.4rem 0 0;
     border: 1px dashed var(--rule-firm);
     border-radius: 3px;
     background: var(--surface);
-    padding: 2rem 1.5rem;
+    padding: 1.9rem 1.5rem;
     display: flex;
     flex-direction: column;
-    gap: 0.6rem;
+    gap: 0.55rem;
     align-items: flex-start;
-    min-height: 13rem;
+    min-height: 12rem;
     justify-content: center;
   }
   .slot .tag {
     font-family: var(--data);
-    font-size: 0.68rem;
+    font-size: 0.67rem;
     letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--accent);
@@ -180,106 +159,49 @@
     border-radius: 2px;
     padding: 0.2rem 0.45rem;
   }
-  .slot h3 { font-family: var(--body); font-size: 1rem; font-weight: 600; }
+  .slot h3 { font-family: var(--body); font-size: 0.98rem; font-weight: 600; margin: 0; }
   .slot ol {
     font-family: var(--data);
-    font-size: 0.78rem;
+    font-size: 0.77rem;
     color: var(--ink-soft);
-    margin: 0.2rem 0 0;
+    margin: 0.15rem 0 0;
     padding-left: 1.2rem;
-    line-height: 1.8;
+    line-height: 1.85;
   }
 
-  /* ---- Pull figure ---- */
-  .pull {
-    margin: 2.75rem 0 0;
-    padding-left: 1.4rem;
-    border-left: 2px solid var(--accent);
-  }
+  .pull { margin: 2.6rem 0 0; padding-left: 1.4rem; border-left: 2px solid var(--accent); }
   .pull p {
     font-family: var(--display);
-    font-size: clamp(1.25rem, 2.6vw, 1.6rem);
-    line-height: 1.35;
+    font-size: clamp(1.22rem, 2.5vw, 1.5rem);
+    line-height: 1.38;
     margin: 0;
     letter-spacing: -0.01em;
   }
 
-  /* ---- Numbers ---- */
-  .figures {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
-    gap: 1.75rem 2rem;
-    margin-top: 2.5rem;
-    padding-top: 1.75rem;
-    border-top: 1px solid var(--rule);
-  }
-  .figures dt {
+  .entry { border-top: 1px solid var(--rule); padding: 1.7rem 0; max-width: 40rem; }
+  .entry:last-of-type { border-bottom: 1px solid var(--rule); }
+  .entry h3 { font-family: var(--body); font-size: 0.98rem; font-weight: 600; margin: 0; }
+  .entry p { margin-top: 0.5rem; color: var(--ink-soft); font-size: 0.96rem; }
+  code {
     font-family: var(--data);
-    font-size: 0.72rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--ink-faint);
-  }
-  .figures dd {
-    margin: 0.35rem 0 0;
-    font-family: var(--display);
-    font-size: 2.1rem;
-    line-height: 1;
-    font-variant-numeric: tabular-nums;
-    letter-spacing: -0.02em;
-  }
-  .figures .note {
-    display: block;
-    font-family: var(--body);
-    font-size: 0.8rem;
-    line-height: 1.4;
-    color: var(--ink-soft);
-    margin-top: 0.45rem;
-    letter-spacing: 0;
-  }
-  .figures .flag dd { color: var(--flag); }
-
-  /* ---- Bug list ---- */
-  .bugs { margin-top: 2.5rem; display: flex; flex-direction: column; gap: 0; }
-  .bug { border-top: 1px solid var(--rule); padding: 1.6rem 0; }
-  .bug:last-child { border-bottom: 1px solid var(--rule); }
-  .bug h3 { font-family: var(--body); font-size: 1rem; font-weight: 600; }
-  .bug p { margin-top: 0.5rem; color: var(--ink-soft); font-size: 0.94rem; max-width: 40rem; }
-  .bug code {
-    font-family: var(--data);
-    font-size: 0.85em;
+    font-size: 0.86em;
     background: var(--accent-wash);
     padding: 0.1em 0.35em;
     border-radius: 2px;
     color: var(--ink);
   }
 
-  /* ---- Limits ---- */
-  .limits { margin-top: 2rem; padding-left: 0; list-style: none; }
-  .limits li {
-    border-top: 1px solid var(--rule);
-    padding: 0.9rem 0 0.9rem 1.6rem;
-    position: relative;
-    color: var(--ink-soft);
-    font-size: 0.95rem;
-    max-width: 42rem;
-  }
-  .limits li::before {
-    content: "—";
-    position: absolute;
-    left: 0;
-    color: var(--ink-faint);
-    font-family: var(--data);
-  }
+  .limits { margin-top: 1.6rem; padding-left: 1.1rem; max-width: 40rem; }
+  .limits li { color: var(--ink-soft); font-size: 0.96rem; margin-top: 0.6rem; }
+  .limits li::marker { color: var(--ink-faint); }
 
-  /* ---- Close ---- */
   .close {
-    margin-top: 4.5rem;
-    padding-top: 2rem;
+    margin-top: 4rem;
+    padding-top: 1.75rem;
     border-top: 1px solid var(--rule-firm);
     display: flex;
     flex-wrap: wrap;
-    gap: 1rem 2.5rem;
+    gap: 0.75rem 2.5rem;
     align-items: baseline;
   }
   .close a {
@@ -289,56 +211,41 @@
     text-decoration-thickness: 1px;
     text-underline-offset: 3px;
   }
-  .close span { font-family: var(--data); font-size: 0.78rem; color: var(--ink-faint); }
 
-  a:focus-visible, .slot:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 3px;
-    border-radius: 2px;
-  }
+  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
 
   @media (prefers-reduced-motion: reduce) {
     * { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
   }
 
-  @media (max-width: 640px) {
-    .wrap { padding-block: 2.5rem 4rem; }
-    .meta { gap: 1.25rem 2rem; }
-  }
+  @media (max-width: 640px) { .wrap { padding-block: 2.5rem 4rem; } }
 </style>
 
 <div class="wrap">
 
   <header class="masthead col">
-    <p class="eyebrow">Lab notes · Builds one and two</p>
-    <h1>Two product problems, worked in public.</h1>
+    <p class="eyebrow">Headroom · Lab notes</p>
+    <h1>Pricing and activation, built properly.</h1>
     <p class="lede">
-      Headroom is a simulated B2B SaaS company I use to work through real product problems
-      end to end. Business context, design, and shipped software, with the reasoning left in.
-      Every figure in it is synthetic.
+      Headroom is a B2B SaaS company I invented so I could work on real product problems
+      without waiting for someone to hand me one. Two builds are finished. Here is what
+      they do, and what went wrong on the way.
     </p>
     <div class="meta">
-      <div><span>Live</span><b><a href="https://headroom-sandy.vercel.app/">headroom-sandy.vercel.app</a></b></div>
-      <div><span>Source</span><b><a href="https://github.com/SMUTEE/Headroom">github.com/SMUTEE/Headroom</a></b></div>
-      <div><span>Tests</span><b>146</b></div>
-      <div><span>Builds shipped</span><b>2 of 5</b></div>
+      <span>Live · <a href="https://headroom-sandy.vercel.app/">headroom-sandy.vercel.app</a></span>
+      <span>Source · <a href="https://github.com/SMUTEE/Headroom">github.com/SMUTEE/Headroom</a></span>
+      <span>All data synthetic</span>
     </div>
   </header>
 
-  <!-- ============================ WHY ============================ -->
   <section>
     <div class="col">
-      <p class="eyebrow">The premise</p>
-      <h2>Screens are cheap. Judgment isn't.</h2>
       <p>
-        Anyone can produce a polished interface now. What a founder actually needs to know
-        before handing over a product problem is narrower: can you take something ambiguous,
-        decide what not to build, and ship a version that survives the edge cases.
-      </p>
-      <p>
-        So the lab is one coherent company rather than a set of demos. The same accounts appear
-        across every build with the same history, which means each surface has to agree with
-        the others. That constraint is most of the value. It is also where the bugs come from.
+        It is one company rather than a folder of demos for a specific reason. The same eleven
+        accounts appear in every build carrying the same history, so each surface has to agree
+        with the others. Orbit Health's usage curve has to explain its invoice, and its invoice
+        has to explain why the account is past due. Most of the interesting problems came out
+        of holding that line.
       </p>
     </div>
   </section>
@@ -348,29 +255,37 @@
   <!-- ============================ BUILD 1 ============================ -->
   <section>
     <div class="col">
-      <p class="eyebrow">Build one · Pricing and packaging</p>
-      <h2>If we change this price, what happens to the customers we already have?</h2>
+      <p class="eyebrow">Pricing and packaging</p>
+      <h2>What a price change does to the customers you already have</h2>
       <p>
-        A pricing page answers what something costs. It cannot answer the question a founder
-        actually loses sleep over, which is what a change does to the book of business they
-        already have. That answer is a distribution, not a number.
+        A pricing page tells you what something costs. It cannot tell you what changing it does
+        to the people already paying you, which is the thing founders actually worry about
+        before they touch pricing at all.
+      </p>
+      <p>
+        So the operator view re-prices the whole book. Drop the Growth plan's included usage
+        from 100k to 40k and three accounts move. Orbit Health and Fieldstack were already over
+        their allowance, so both rise by $72. Loomline had been sitting at 98,252 units against
+        a 100,000 allowance, close enough that nobody had thought about it, and crosses into
+        billable overage for the first time: $254 to $323.90.
+      </p>
+      <p>
+        The other eight accounts do not move at all, because they are on different plans. A
+        single revenue number would have hidden every part of that.
       </p>
     </div>
 
     <figure>
       <img src="shots/05-pricing-loomline-crosses.jpg" alt="An operator view showing eleven accounts re-priced under a proposed packaging change. Three accounts increase; Loomline is flagged as newly in overage. A panel beside the table shows Loomline's bill moving from $254.00 to $323.90, up 28 percent, with the single invoice line responsible.">
       <figcaption>
-        Growth's included usage dropped from 100k to 40k. Three accounts move.
-        Orbit Health and Fieldstack were already over, so they rise together.
-        <b>Loomline crosses into billable overage for the first time.</b>
-        The eight accounts on other plans do not move at all, which is the point of
-        modelling against the real book rather than one hypothetical customer.
+        Largest increase first. Selecting an account shows what the change does to that one
+        customer, and only the invoice lines that actually moved.
       </figcaption>
     </figure>
 
     <div class="col">
       <div class="pull">
-        <p>A pricing change is not a revenue number. It is a distribution, and the tail is the part that emails you.</p>
+        <p>Pricing changes get modelled as one number. The number nobody models is the one that generates the emails.</p>
       </div>
     </div>
 
@@ -378,28 +293,26 @@
       <span class="tag">Recording · 12s</span>
       <h3>The slider moment</h3>
       <ol>
-        <li>Open the Pricing &amp; packaging page, clean.</li>
+        <li>Open Pricing &amp; packaging, clean.</li>
         <li>Drag <em>Included usage</em> from 100k down to 40k.</li>
-        <li>Hold on the table re-sorting and Loomline flipping to “Newly in overage”.</li>
-        <li>Click Loomline. End on the delta panel.</li>
+        <li>Hold while the table re-sorts and Loomline flips to “Newly in overage”.</li>
+        <li>Click Loomline. End on the panel.</li>
       </ol>
     </div>
 
     <div class="col">
       <p>
-        The same engine drives the customer's own billing page, because a pricing change only
-        works if the customer sees it coming. Every figure there reconciles by hand, which took
-        three attempts to get right.
+        The same engine renders the customer's own billing page, because a price change only
+        works if the customer sees it coming before the invoice does. Every figure on that page
+        can be checked by hand, which took three goes to get right.
       </p>
     </div>
 
     <figure>
       <img src="shots/06-customer-billing-page.jpg" alt="A customer-facing billing page showing usage of 22,596 units against a 100,000 allowance, a daily average of 3,228 units, and a projection of 100,068 by period end. Surrounding sections for invoice history, payment method and billing contacts are drawn as placeholders labelled not built.">
       <figcaption>
-        The customer's side. <b>22,596 used, plus 3,228 a day for the 24 days left, comes to
-        100,068.</b> The sum closes, because every input to the projection is a figure printed
-        on the page. Sections that do not exist yet are drawn as scenery and labelled, rather
-        than quietly omitted.
+        22,596 used, plus 3,228 a day for the 24 days left, comes to 100,068. The parts of this
+        page that do not exist yet are drawn in and labelled rather than left out.
       </figcaption>
     </figure>
   </section>
@@ -409,39 +322,42 @@
   <!-- ============================ BUILD 2 ============================ -->
   <section>
     <div class="col">
-      <p class="eyebrow">Build two · Activation</p>
-      <h2>Are new customers reaching value, or just finishing our checklist?</h2>
+      <p class="eyebrow">Activation</p>
+      <h2>Everyone agrees a signup isn't an activation</h2>
       <p>
-        Every team agrees that a signup is not an activation, and most dashboards still measure
-        the checklist. The gap between the two is where trials die quietly, because the product
-        has already stopped asking those accounts for anything.
+        Most dashboards still measure the checklist. Headroom keeps the two apart. The checklist
+        is what the product nags you about: connect a source, invite someone, add billing.
+        Activation is narrower, and I had to pick something specific for it to mean anything at
+        all: create an account health rule, then look at the accounts it returns. Both halves,
+        because configuring a thing you never use is not value.
+      </p>
+      <p>
+        That gives three numbers that disagree with each other. 64% of accounts activated.
+        Eight finished every onboarding step. One of those eight did all of them and got nothing.
       </p>
     </div>
 
     <figure>
       <img src="shots/01-activation-the-two-numbers.png" alt="Four metrics in a row: activation rate 64 percent across 7 of 11 accounts; onboarding complete 8; but not activated 1; stalled 2. Below them a warning reads that one account has finished onboarding without reaching value.">
       <figcaption>
-        Three numbers that disagree. 64% activated. Eight accounts finished every step the
-        product asks for. <b>One of those eight did all of them and reached nothing.</b>
-        A completion-rate dashboard reports that account as a success.
+        The first number is the one a team would quote. The third is the one worth acting on.
       </figcaption>
     </figure>
 
     <div class="col">
       <p>
-        Activation here means one specific thing: create an account health rule <em>and</em>
-        view the accounts it returns. Configuration plus consumption. Following instructions is
-        not value received, and a definition vague enough to be satisfied by anything measures
-        nothing.
+        The account is Slate Labs, eleven days stalled. Connected a source, invited a teammate,
+        added billing, never made a rule. Every completion metric in the product says it is
+        fine, and it is the account most likely to leave without anyone noticing, because the
+        product has stopped asking it for anything.
       </p>
     </div>
 
     <figure>
       <img src="shots/03-slate-labs-before.jpg" alt="An account table sorted with stalled accounts first, beside a detail panel for Slate Labs showing three completed onboarding steps and two incomplete activation steps, with a recommendation that onboarding is complete and the account has still not reached value.">
       <figcaption>
-        Slate Labs. Stalled eleven days. Connected a source, invited a teammate, added billing.
-        Never created a rule, so never saw an account list, so never got anything out of the
-        product. <b>The recommendation names that state rather than reporting progress.</b>
+        Stalled accounts sort first. The recommendation says what is actually wrong instead of
+        reporting progress.
       </figcaption>
     </figure>
 
@@ -450,117 +366,100 @@
       <h3>The cohort moving</h3>
       <ol>
         <li>Open Activation. Hold on the four metrics for a beat.</li>
-        <li>Select Slate Labs. Click <em>Record</em> on each of the two remaining steps.</li>
+        <li>Select Slate Labs. Click <em>Record</em> on each remaining step.</li>
         <li>Cut back to the metrics as they recompute. No narration.</li>
       </ol>
+    </div>
+
+    <div class="col">
+      <p>
+        Recording those two steps moves the rate to 73%, drops the
+        onboarded-but-not-activated count to zero, and shifts the stage distribution. All of
+        it recomputes from the event stream, including the two events added a second earlier.
+      </p>
+      <p>
+        While building this I deleted the <code>activatedAt</code> column from the account
+        model. If you store activation and also derive it, the two drift apart the first time
+        someone backfills or replays an event, and then the team is planning against a number
+        nobody can reconstruct.
+      </p>
     </div>
 
     <figure>
       <img src="shots/04-activation-after-recording.jpg" alt="The same activation page after recording two steps: activation rate now 73 percent across 8 of 11 accounts, zero accounts onboarded but not activated, one stalled. Slate Labs now reads as activated.">
       <figcaption>
-        After recording the two steps Slate Labs was missing. Rate to 73%, the
-        onboarded-but-not-activated count to zero, one fewer stalled, and the stage distribution
-        shifts. <b>Nothing is stored as a flag</b>, so every one of those numbers recomputed
-        from the event stream, including the two events added a second earlier.
+        After recording the two steps Slate Labs was missing. No celebration on completion, on
+        purpose: a progress bar that congratulates inflates the number it is measuring.
       </figcaption>
     </figure>
-
-    <div class="col">
-      <p>
-        That last point is a design decision with teeth. While building this I removed the
-        <code style="font-family:var(--data);font-size:0.85em">activatedAt</code> column from the
-        account model. Storing activation while also deriving it invites the two to disagree the
-        first time anything is backfilled or replayed, and then the number nobody can explain is
-        the one the team plans against.
-      </p>
-    </div>
-
-    <dl class="figures">
-      <div><dt>Activation rate</dt><dd>64%</dd><span class="note">the number a team would quote</span></div>
-      <div class="flag"><dt>Onboarded, not activated</dt><dd>1</dd><span class="note">the number that contradicts it</span></div>
-      <div><dt>Accounts</dt><dd>11</dd><span class="note">across five derived stages</span></div>
-      <div><dt>Gamification</dt><dd>0</dd><span class="note">a progress bar that congratulates inflates what it measures</span></div>
-    </dl>
   </section>
 
   <hr class="tick">
 
-  <!-- ============================ CRAFT ============================ -->
+  <!-- ============================ WRONG ============================ -->
+  <section>
+    <div class="col">
+      <p class="eyebrow">Along the way</p>
+      <h2>Three things that went wrong</h2>
+      <p>
+        These are more useful than the finished screens, because each one is the difference
+        between software that looks right and software that is.
+      </p>
+    </div>
+
+    <div class="entry">
+      <h3>A cent that rounded the wrong way</h3>
+      <p>
+        Converting dollars to cents, I used <code>Math.round(dollars * 100)</code>. For $1.005
+        that returns 100, and the answer is 101. In floating point
+        <code>1.005 * 100</code> is <code>100.49999999999999</code>, so the error exists before
+        the rounding ever happens and nothing downstream can recover it. The conversion now
+        shifts the decimal point on the number's string form and never multiplies. A test
+        caught it, which is the only reason I know about it at all.
+      </p>
+    </div>
+
+    <div class="entry">
+      <h3>A meter labelled “used” that showed a forecast</h3>
+      <p>
+        The customer's usage bar filled from the projection while the label said used so far.
+        An account that had consumed 23% of its allowance rendered a full red bar. Every test
+        passed, because the arithmetic was correct and the arithmetic was not the problem. The
+        bar now fills from real usage with the allowance crossing marked on the same track.
+      </p>
+    </div>
+
+    <div class="entry">
+      <h3>A projection nobody could check</h3>
+      <p>
+        The page reported usage over seven days while computing the rate on the 6.5 days
+        actually elapsed. Anyone adding it up by hand landed 8% away from the published figure
+        with no way to see why. It took three passes to close, because each fix left one more
+        input derived from a number more precise than the one printed on screen. On a page
+        whose job is making a bill checkable, that is worth more than the precision it cost.
+      </p>
+    </div>
+  </section>
+
+  <hr class="tick">
+
+  <!-- ============================ SYSTEM ============================ -->
   <section>
     <div class="col">
       <p class="eyebrow">Underneath</p>
-      <h2>The colour system is computed, and it fails the build.</h2>
+      <h2>The colour system fails the build</h2>
       <p>
-        Both surfaces share one design system. Its palette is generated rather than picked:
-        six ramps in OKLCH with constant hue, vividness peaking mid-ramp, and chroma set as a
-        proportion of each hue's own in-gamut maximum so amber does not come out washed out
-        beside red.
+        Both surfaces share one design system. Its palette is computed rather than chosen, and
+        every colour pair that actually renders is measured on each run, in both light and dark,
+        with the build failing when one drops below its threshold.
       </p>
       <p>
-        The steps are defined by role, not lightness, so step nine is the solid fill in both
-        light and dark and no component CSS branches on theme. Only the primitives swap.
+        It has caught two real problems so far. One was a focus ring that had been silently
+        falling back to the text colour on every themed control. The other happened while I was
+        fixing something else: a chart scale I had built by reusing existing palette steps
+        measured as identical between its first two values, which would have shipped a bar chart
+        whose segments nobody could tell apart.
       </p>
-      <p>
-        The part that earns its place is the gate. Every rendered colour pair is measured on
-        every run, and the build fails when one misses its threshold. Pairs declare a content
-        type rather than a ratio, because getting those thresholds right is the expertise:
-        holding a decorative separator to 3:1 forces a heavy grey line nobody wanted, and
-        exempting a focus ring from it ships an accessibility failure.
-      </p>
-    </div>
-
-    <dl class="figures">
-      <div><dt>Pairs measured</dt><dd>58</dd><span class="note">light and dark, every run</span></div>
-      <div><dt>WCAG 2.2 AA</dt><dd>58</dd><span class="note">pass, and the gate fails the build otherwise</span></div>
-      <div><dt>APCA shortfalls</dt><dd>3</dd><span class="note">listed with reasons rather than rounded away</span></div>
-      <div><dt>Tests</dt><dd>146</dd><span class="note">business rules, not render snapshots</span></div>
-    </dl>
-  </section>
-
-  <hr class="tick">
-
-  <!-- ============================ BUGS ============================ -->
-  <section>
-    <div class="col">
-      <p class="eyebrow">Three I kept</p>
-      <h2>The bugs are the case study.</h2>
-      <p>
-        Finished work argues for itself badly. What a change in these is worth reading, because
-        each one shows the difference between software that looks right and software that is.
-      </p>
-    </div>
-
-    <div class="bugs">
-      <div class="bug">
-        <h3>The cent that rounded the wrong way</h3>
-        <p>
-          Converting dollars to cents with <code>Math.round(dollars * 100)</code> returns 100
-          for <code>1.005</code>, where the right answer is 101. <code>1.005 * 100</code> is
-          <code>100.49999999999999</code> in IEEE 754, and no careful rounding afterwards
-          recovers it, because the multiply introduced the error. The fix is to never multiply:
-          shift the decimal point on the number's own string and do integer arithmetic. My own
-          test caught it, which is the only reason it is a note here rather than a support ticket.
-        </p>
-      </div>
-      <div class="bug">
-        <h3>A meter that said “consumed” and showed a forecast</h3>
-        <p>
-          The customer's usage bar filled from the projection while labelled as consumption. An
-          account that had used 23% of its allowance rendered a full red bar. It passed every
-          test, because the tests checked the arithmetic and the arithmetic was right. The bar
-          now fills from actual usage with the allowance crossing marked on the same track.
-        </p>
-      </div>
-      <div class="bug">
-        <h3>A projection nobody could reproduce</h3>
-        <p>
-          The page showed usage over seven days and a projection built on the exact 6.5 days
-          elapsed. A reader checking the sum by hand landed 8% away from the published figure
-          with no way to account for the gap. It took three passes to fully close, because each
-          fix left one input still computed from a more precise number than the one on screen.
-          On a surface whose job is to make a bill checkable, close enough is the bug.
-        </p>
-      </div>
     </div>
   </section>
 
@@ -569,26 +468,20 @@
   <!-- ============================ LIMITS ============================ -->
   <section>
     <div class="col">
-      <p class="eyebrow">Honestly</p>
-      <h2>What this does not prove.</h2>
-      <p>
-        Every build in the lab carries a section like this. It is not a disclaimer. Naming what
-        a piece of work does not establish is what makes the rest of it credible.
-      </p>
+      <p class="eyebrow">Scope</p>
+      <h2>What this isn't</h2>
+      <ul class="limits">
+        <li>A synthetic environment. It shows billing logic and billing UX, not production reconciliation. No tax, no multi-currency, no dunning.</li>
+        <li>The activation event is designed, not discovered. A real one comes from correlating candidate events against retention, and nothing here does that.</li>
+        <li>Nothing about working inside an existing codebase, with its history and its constraints.</li>
+        <li>Nothing about what collaborating on a problem like this is actually like.</li>
+      </ul>
     </div>
-
-    <ul class="limits">
-      <li>A synthetic environment. It demonstrates billing logic and billing UX, not production financial reconciliation. No tax, no multi-currency, no dunning.</li>
-      <li>The activation event is designed, not discovered. A real one is found by correlating candidate events against retention, and nothing here does that.</li>
-      <li>Nothing about working inside an existing codebase, with its constraints and its history.</li>
-      <li>Nothing about what collaborating on a problem like this is actually like. That needs a different kind of evidence than a lab can produce.</li>
-    </ul>
   </section>
 
   <div class="close">
     <a href="https://headroom-sandy.vercel.app/">Open the lab</a>
     <a href="https://github.com/SMUTEE/Headroom">Read the source</a>
-    <span>Three builds remain: account intelligence, an AI account operator, and the console that joins them.</span>
   </div>
 
 </div>
