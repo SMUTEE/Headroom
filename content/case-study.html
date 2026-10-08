@@ -225,10 +225,10 @@
 
   <header class="masthead col">
     <p class="eyebrow">Headroom · Lab notes</p>
-    <h1>Pricing and activation, built properly.</h1>
+    <h1>Three product problems, worked end to end.</h1>
     <p class="lede">
       Headroom is a B2B SaaS company I invented so I could work on real product problems
-      without waiting for someone to hand me one. Two builds are finished. Here is what
+      without waiting for someone to hand me one. Three builds are finished. Here is what
       they do, and what went wrong on the way.
     </p>
     <div class="meta">
@@ -394,13 +394,85 @@
     </figure>
   </section>
 
+
+  <hr class="tick">
+
+  <!-- ============================ BUILD 3 ============================ -->
+  <section>
+    <div class="col">
+      <p class="eyebrow">Signals</p>
+      <h2>Which of this actually deserves attention today</h2>
+      <p>
+        Most analytics surfaces hand you fifteen charts and a sentence suggesting you
+        investigate something. The interpreting is the expensive part, and it gets left to the
+        reader, who has less context than the system does.
+      </p>
+      <p>
+        So this surface does the interpreting. Ranked signals, each one naming the rule that
+        fired, the events corroborating it, and what to do about it. Every threshold is written
+        down and none of it is prediction, because nothing in this lab has been validated
+        against an outcome and a churn probability would be invented confidence.
+      </p>
+    </div>
+
+    <figure>
+      <img src="shots/07-signals-and-causes.jpg" alt="A signals list with four ranked items, each with acknowledge and dismiss actions. Beside it, Orbit Health shows a health score of 45, down from 79 a month ago, a band scale marking it six points from critical, and five causes with the points each one cost.">
+      <figcaption>
+        Four signals, most severe first. Orbit Health is down 34 points, and the five causes
+        are listed with what each one cost.
+      </figcaption>
+    </figure>
+
+    <div class="col">
+      <p>
+        The health score took the longest to get right. A number nobody can interrogate is a
+        number nobody acts on, so it is built as a list of attributed contributions rather than
+        one weighted formula. Clicking the change marks the events behind it.
+      </p>
+    </div>
+
+    <figure>
+      <img src="shots/08-timeline-attribution.jpg" alt="An account timeline with three entries highlighted and annotated with point values: a declined card payment at minus fourteen, and two support messages at minus four each. The payment entry notes that the provider sent no decline reason.">
+      <figcaption>
+        The declined payment cost fourteen points, each support conversation four. The payment
+        entry also notes that the provider sent no decline reason, rather than inferring one.
+      </figcaption>
+    </figure>
+
+    <div class="col">
+      <p>
+        A score of 45 says less than it appears to. The useful fact is that it sits six points
+        from critical, which is why the scale draws the thresholds instead of printing a word.
+      </p>
+      <div class="pull">
+        <p>A signal list nobody trusts is worse than no list at all.</p>
+      </div>
+      <p>
+        Which is why dismissing a signal asks why. Two of the five reasons fault the rule rather
+        than the account, and those get counted by signal kind. Several people calling one rule
+        too sensitive is a report about that threshold, and the page says so back.
+      </p>
+    </div>
+
+    <div class="slot">
+      <span class="tag">Recording · 14s</span>
+      <h3>Signal to cause</h3>
+      <ol>
+        <li>Open Signals. Pause on the four ranked items.</li>
+        <li>Click the Orbit Health signal.</li>
+        <li>Click the health change to expand the causes.</li>
+        <li>Scroll to the timeline and hold on the three marked entries.</li>
+      </ol>
+    </div>
+  </section>
+
   <hr class="tick">
 
   <!-- ============================ WRONG ============================ -->
   <section>
     <div class="col">
       <p class="eyebrow">Along the way</p>
-      <h2>Three things that went wrong</h2>
+      <h2>Four things that went wrong</h2>
       <p>
         These are more useful than the finished screens, because each one is the difference
         between software that looks right and software that is.
@@ -437,6 +509,23 @@
         with no way to see why. It took three passes to close, because each fix left one more
         input derived from a number more precise than the one printed on screen. On a page
         whose job is making a bill checkable, that is worth more than the precision it cost.
+      </p>
+    </div>
+  </section>
+
+    <div class="entry">
+      <h3>A test I had written to pass</h3>
+      <p>
+        Orbit Health is described everywhere as the account in trouble, and its own event record
+        says usage fell 23% over fourteen days. Building the signals surface, it produced no
+        signal at all. The generator had spread that decline evenly across sixty days, so a
+        fortnight comparison saw 6%. The account the whole dataset is built around was not in
+        trouble by its own numbers.
+      </p>
+      <p>
+        The seed test should have caught it two builds earlier. It asserted the drop was greater
+        than 3%, a threshold I had picked because it passed. It now checks the data against the
+        figure the event claims, so the two cannot drift apart again.
       </p>
     </div>
   </section>
