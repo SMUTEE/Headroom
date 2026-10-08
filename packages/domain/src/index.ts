@@ -10,3 +10,4 @@ export * from './types';
 export * from './money';
 export * from './billing';
 export * from './activation';
+export * from './health';
