@@ -280,9 +280,22 @@ export function seedAccounts(): Account[] {
 // Usage
 // ---------------------------------------------------------------------------
 
-/** Daily usage shape per account, as a multiple of plan included units. */
-const USAGE_PROFILE: Record<string, { baseline: number; trend: number }> = {
-  [HERO_ACCOUNT_ID]: { baseline: 0.042, trend: -0.23 }, // declining 23%
+/**
+ * Daily usage shape per account, as a multiple of plan included units.
+ *
+ * `trend` is a slow drift applied across the whole window. `recentDrop` is a
+ * step change inside the last `RECENT_WINDOW_DAYS`, which is what a fortnight
+ * comparison actually measures — a drift spread over sixty days barely
+ * registers in a fourteen-day window, and an account described as "down 23%
+ * over two weeks" has to actually be down 23% over two weeks.
+ */
+const RECENT_WINDOW_DAYS = 14;
+
+const USAGE_PROFILE: Record<
+  string,
+  { baseline: number; trend: number; recentDrop?: number }
+> = {
+  [HERO_ACCOUNT_ID]: { baseline: 0.042, trend: -0.05, recentDrop: 0.23 },
   acc_northstar: { baseline: 0.031, trend: 0.04 },
   acc_loomline: { baseline: 0.033, trend: 0.0 },
   acc_slate_labs: { baseline: 0.002, trend: 0.0 }, // barely using it
@@ -322,10 +335,14 @@ export function seedUsageEvents(): UsageEvent[] {
       // Linear trend across the window, plus bounded daily noise.
       const progress = (DAYS_OF_USAGE - 1 - day) / (DAYS_OF_USAGE - 1);
       const trendFactor = 1 + profile.trend * progress;
+      // A step inside the recent window, so a fortnight-over-fortnight
+      // comparison sees the decline the account's own events describe.
+      const recentFactor =
+        profile.recentDrop && day < RECENT_WINDOW_DAYS ? 1 - profile.recentDrop : 1;
       const noise = 0.85 + random() * 0.3;
       const units = Math.max(
         0,
-        Math.round(plan.includedUnits * profile.baseline * trendFactor * noise),
+        Math.round(plan.includedUnits * profile.baseline * trendFactor * recentFactor * noise),
       );
 
       const occurredAt = daysAgo(day, 6);

@@ -202,11 +202,18 @@ describe('Orbit Health — the hero narrative', () => {
     const prior = sorted.slice(-window * 2, -window);
 
     const mean = (xs: typeof sorted) => xs.reduce((sum, e) => sum + e.units, 0) / xs.length;
-    // The decline must be real, not noise. Asserting direction and rough
-    // magnitude rather than an exact figure, since daily noise is seeded in.
-    expect(mean(recent)).toBeLessThan(mean(prior));
     const drop = 1 - mean(recent) / mean(prior);
-    expect(drop).toBeGreaterThan(0.03);
+
+    // The account's own usage_change event claims -23% over 14 days. The data
+    // has to match the claim: an earlier version asserted only `drop > 0.03`,
+    // which passed while the real figure was 6% and the event said 23%.
+    const claimed = world.accountEvents.find(
+      (e) => e.accountId === HERO_ACCOUNT_ID && e.type === 'usage_change',
+    )!;
+    const claimedDrop = Math.abs(Number(claimed.payload.changePercent)) / 100;
+    expect(claimed.payload.windowDays).toBe(window);
+    expect(drop).toBeGreaterThan(claimedDrop - 0.06);
+    expect(drop).toBeLessThan(claimedDrop + 0.06);
   });
 });
 

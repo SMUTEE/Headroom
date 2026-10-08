@@ -12,6 +12,11 @@ const BUILDS = [
     name: "Activation",
     question: "Are new customers reaching value, or just finishing our checklist?",
   },
+  {
+    href: "/lab/signals",
+    name: "Signals",
+    question: "What is happening inside these accounts, and which of it deserves attention today?",
+  },
 ];
 
 export default function Home() {

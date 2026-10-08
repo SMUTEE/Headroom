@@ -49,6 +49,12 @@ export {
 export { Skeleton, SkeletonText, type SkeletonProps } from './components/skeleton';
 
 export {
+  Timeline,
+  type TimelineItem,
+  type TimelineTone,
+} from './components/timeline';
+
+export {
   Distribution,
   Stepper,
   type DistributionSegment,
