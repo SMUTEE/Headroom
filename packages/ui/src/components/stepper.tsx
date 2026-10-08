@@ -137,9 +137,16 @@ export interface DistributionSegment {
 /**
  * A single stacked bar showing how a population splits across ordered stages.
  *
- * Counts are printed beside every label rather than relying on segment width,
- * because a stage holding one account out of eleven is a sliver nobody can
- * compare by eye.
+ * Segments take a sequential scale rather than one flat fill, because the
+ * stages are ordered and the scale should say so. One flat fill repeated five
+ * times makes every boundary invisible, which turns a distribution into a
+ * single block — the counts are then the only thing communicating, and the bar
+ * is decoration.
+ *
+ * Counts sit beside their own swatch in the legend. A bare number in front of
+ * a stage name reads as an ordinal, especially when the stages are a sequence:
+ * "1 Setup, 2 Connected, 1 Configured" looks like a numbered list that lost
+ * its place rather than three counts.
  */
 export function Distribution({
   segments,
@@ -156,27 +163,47 @@ export function Distribution({
     <div className={className}>
       <div
         role="img"
-        aria-label={`${label}: ${segments.map((s) => `${s.value} ${s.label}`).join(', ')}`}
-        className="flex h-2 w-full gap-0.5 overflow-hidden rounded-sm"
+        aria-label={`${label}. ${segments
+          .map((s) => `${s.label}: ${s.value}`)
+          .join('. ')}. ${total} in total.`}
+        className="flex h-2.5 w-full gap-0.5"
       >
-        {segments.map((s) => (
+        {segments.map((s, i) => (
           <span
             key={s.id}
             className={cn(
-              'h-full first:rounded-l-sm last:rounded-r-sm',
-              s.emphasis ? 'bg-accent-solid' : 'bg-bg-component-active',
+              'h-full rounded-xs',
+              // Emphasis is a ring, not a different fill: swapping the colour
+              // would break the one thing the scale is encoding.
+              s.emphasis && 'ring-2 ring-text-primary ring-offset-1 ring-offset-bg-surface',
             )}
-            style={{ width: total === 0 ? '0%' : `${(s.value / total) * 100}%` }}
+            style={{
+              backgroundColor: `var(--color-scale-${Math.min(i + 1, 5)})`,
+              width: total === 0 ? '0%' : `${(s.value / total) * 100}%`,
+            }}
           />
         ))}
       </div>
+
       <ul className="mt-3 flex flex-wrap gap-x-5 gap-y-2">
-        {segments.map((s) => (
-          <li key={s.id} className="flex items-baseline gap-1.5">
+        {segments.map((s, i) => (
+          <li key={s.id} className="flex items-center gap-1.5">
+            <span
+              aria-hidden
+              className="size-2.5 shrink-0 rounded-xs"
+              style={{ backgroundColor: `var(--color-scale-${Math.min(i + 1, 5)})` }}
+            />
+            <span
+              className={cn(
+                'text-metadata',
+                s.emphasis ? 'text-text-primary' : 'text-text-secondary',
+              )}
+            >
+              {s.label}
+            </span>
             <span data-numeric className="text-label text-text-primary">
               {s.value}
             </span>
-            <span className="text-metadata text-text-secondary">{s.label}</span>
           </li>
         ))}
       </ul>

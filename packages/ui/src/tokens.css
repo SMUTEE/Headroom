@@ -90,6 +90,11 @@
   --info-10: oklch(0.5 0.06788343620300294 235);
   --info-11: oklch(0.44 0.0485366569161415 235);
   --info-12: oklch(0.26 0.01268571719527245 235);
+  --chart-1: oklch(0.88 0.024383304119110105 285);
+  --chart-2: oklch(0.78 0.05822385549545288 285);
+  --chart-3: oklch(0.67 0.10230047893524172 285);
+  --chart-4: oklch(0.55 0.13580069005489354 285);
+  --chart-5: oklch(0.4 0.09816275238990783 285);
 
   --color-bg-page: var(--neutral-1);
   --color-bg-subtle: var(--neutral-2);
@@ -112,6 +117,11 @@
   --color-accent-solid: var(--accent-9);
   --color-accent-solid-hover: var(--accent-10);
   --color-accent-text: var(--accent-11);
+  --color-scale-1: var(--chart-1);
+  --color-scale-2: var(--chart-2);
+  --color-scale-3: var(--chart-3);
+  --color-scale-4: var(--chart-4);
+  --color-scale-5: var(--chart-5);
   --color-danger-bg: var(--danger-3);
   --color-danger-border: var(--danger-7);
   --color-danger-solid: var(--danger-9);
@@ -208,6 +218,11 @@
   --info-10: oklch(0.63 0.0735584915351868 235);
   --info-11: oklch(0.79 0.05588455464601517 235);
   --info-12: oklch(0.95 0.0055456675502657884 235);
+  --chart-1: oklch(0.47 0.10984879434108735 285);
+  --chart-2: oklch(0.56 0.12718689888715745 285);
+  --chart-3: oklch(0.65 0.10937493491172791 285);
+  --chart-4: oklch(0.74 0.07274566400051119 285);
+  --chart-5: oklch(0.83 0.037023301273584365 285);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -286,6 +301,11 @@
     --info-10: oklch(0.63 0.0735584915351868 235);
     --info-11: oklch(0.79 0.05588455464601517 235);
     --info-12: oklch(0.95 0.0055456675502657884 235);
+    --chart-1: oklch(0.47 0.10984879434108735 285);
+    --chart-2: oklch(0.56 0.12718689888715745 285);
+    --chart-3: oklch(0.65 0.10937493491172791 285);
+    --chart-4: oklch(0.74 0.07274566400051119 285);
+    --chart-5: oklch(0.83 0.037023301273584365 285);
   }
 }
 
@@ -313,6 +333,11 @@
   --color-accent-solid: var(--accent-9);
   --color-accent-solid-hover: var(--accent-10);
   --color-accent-text: var(--accent-11);
+  --color-scale-1: var(--chart-1);
+  --color-scale-2: var(--chart-2);
+  --color-scale-3: var(--chart-3);
+  --color-scale-4: var(--chart-4);
+  --color-scale-5: var(--chart-5);
   --color-danger-bg: var(--danger-3);
   --color-danger-border: var(--danger-7);
   --color-danger-solid: var(--danger-9);

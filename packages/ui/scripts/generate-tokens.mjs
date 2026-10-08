@@ -72,6 +72,26 @@ const RAMPS = {
   info: { hue: 235, chromaScale: 1 },
 };
 
+/**
+ * A sequential scale for ordered chart dimensions.
+ *
+ * Generated separately rather than aliased onto the UI ramp, because the two
+ * want opposite spacing. The UI ramp is deliberately dense at the light end,
+ * where surfaces need fine distinctions — which makes consecutive steps
+ * perceptually identical, and a chart scale built from them encodes nothing.
+ * Aliasing it that way measured Lc 0.0 between the first two steps.
+ *
+ * These are evenly spaced in perceived lightness instead, so every neighbour
+ * is discernible. Verified in the pair table below, not assumed.
+ */
+const CHART_SCALE = {
+  hue: 285,
+  light: [0.88, 0.78, 0.67, 0.55, 0.4],
+  dark: [0.47, 0.56, 0.65, 0.74, 0.83],
+  // Enough colour to read as one family, not enough to fight the accent.
+  chroma: [0.4, 0.5, 0.56, 0.52, 0.42],
+};
+
 // ---------------------------------------------------------------------------
 // Gamut
 // ---------------------------------------------------------------------------
@@ -144,6 +164,18 @@ const SEMANTIC = {
   'accent-solid-hover': 'accent-10',
   'accent-text': 'accent-11',
 
+  // Sequential scale, for an ordered dimension in a chart — a funnel, a
+  // distribution across stages. Ordered categories want a scale that reads as
+  // progression; reusing one flat fill for every segment makes the divisions
+  // invisible, which is how a stacked bar stops showing a distribution at all.
+  // Steps are spaced so neighbours stay distinguishable, which the pair table
+  // below checks rather than assumes.
+  'scale-1': 'chart-1',
+  'scale-2': 'chart-2',
+  'scale-3': 'chart-3',
+  'scale-4': 'chart-4',
+  'scale-5': 'chart-5',
+
   // Status. Each pairs with an icon or text in use — colour is never the only
   // signal, which `better-accessibility` owns.
   'danger-bg': 'danger-3',
@@ -178,6 +210,11 @@ for (const appearance of ['light', 'dark']) {
       palette[appearance][`${name}-${i + 1}`] = color;
     });
   }
+
+  CHART_SCALE[appearance].forEach((l, i) => {
+    const c = maxChroma(l, CHART_SCALE.hue) * CHART_SCALE.chroma[i];
+    palette[appearance][`chart-${i + 1}`] = { mode: 'oklch', l, c, h: CHART_SCALE.hue };
+  });
 }
 
 const css = (color) => formatCss({ ...toOklch(color), alpha: undefined });
@@ -324,6 +361,26 @@ const PAIRS = [
   ['info-text', 'info-bg', 4.5, 60, 'info text on info surface'],
   ['info-text', 'bg-page', 4.5, 60, 'info text on page'],
   ['info-solid', 'bg-page', 3, 30, 'info indicator vs page'],
+
+  /*
+   * The sequential scale. No WCAG rule governs one chart segment against the
+   * next, so these answer to APCA.
+   *
+   * The pairs that matter are each step against the CARD, not against its
+   * neighbour: segments are separated by a gap in the card colour, so the gap
+   * does the separating and a step is only invisible if it disappears into the
+   * surface. Checking neighbours instead would force a scale so widely spaced
+   * that its first step is already dark.
+   *
+   * The ends are checked against each other, because a scale whose extremes
+   * read alike is not encoding an order.
+   */
+  ['scale-1', 'bg-surface', null, 15, 'scale step 1 vs card'],
+  ['scale-2', 'bg-surface', null, 15, 'scale step 2 vs card'],
+  ['scale-3', 'bg-surface', null, 15, 'scale step 3 vs card'],
+  ['scale-4', 'bg-surface', null, 15, 'scale step 4 vs card'],
+  ['scale-5', 'bg-surface', null, 15, 'scale step 5 vs card'],
+  ['scale-5', 'scale-1', null, 45, 'scale spans a perceptible range, end to end'],
 ];
 
 /** APCA Lc. Signed: positive is dark-on-light, negative light-on-dark. */
