@@ -17,6 +17,11 @@ const BUILDS = [
     name: "Signals",
     question: "What is happening inside these accounts, and which of it deserves attention today?",
   },
+  {
+    href: "/lab/operator",
+    name: "AI operator",
+    question: "Can AI do the synthesis without becoming something you cannot check?",
+  },
 ];
 
 export default function Home() {
