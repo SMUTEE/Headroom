@@ -1,10 +1,11 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { AppShell, AppShellMobileNav, ThemeToggle } from '@headroom/ui';
+import { AppShell, AppShellMobileNav } from '@headroom/ui';
 import { seedWorld } from '@headroom/data';
 import { Brand } from '../../../_shell/brand';
 import { CUSTOMER_NAV } from '../../../_shell/nav';
+import { OperatorBar, OperatorFooter } from '../../../_shell/bar';
 import { CustomerBilling } from './customer-billing';
 
 const world = seedWorld();
@@ -42,7 +43,8 @@ export default async function CustomerPage({
     <AppShell
       brand={<Brand subtitle={account.companyName} />}
       nav={CUSTOMER_NAV}
-      barEnd={<ThemeToggle />}
+      barEnd={<OperatorBar />}
+      footer={<OperatorFooter />}
       title="Usage & billing"
       description="What you have used this month, and what it is on track to cost."
       notice={

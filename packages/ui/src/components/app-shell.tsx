@@ -39,6 +39,8 @@ export interface AppShellProps {
   actions?: ReactNode;
   /** A persistent strip under the bar, for an environment or demo notice. */
   notice?: ReactNode;
+  /** Closes the content column. Authorship, legal, whatever the app needs. */
+  footer?: ReactNode;
   children: ReactNode;
 }
 
@@ -81,6 +83,7 @@ export function AppShell({
   description,
   actions,
   notice,
+  footer,
   children,
 }: AppShellProps) {
   return (
@@ -143,6 +146,10 @@ export function AppShell({
           </div>
 
           <div className="px-4 py-6 sm:px-6">{children}</div>
+
+          {footer ? (
+            <div className="border-t border-border px-4 py-5 sm:px-6">{footer}</div>
+          ) : null}
         </main>
       </div>
     </div>

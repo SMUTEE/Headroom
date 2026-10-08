@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
-import { AppShell, AppShellMobileNav, Callout, ThemeToggle } from '@headroom/ui';
+import { AppShell, AppShellMobileNav, Callout } from '@headroom/ui';
 import { Brand } from '../_shell/brand';
 import { PRICING_NAV } from '../_shell/nav';
+import { OperatorBar, OperatorFooter } from '../_shell/bar';
 import { DecisionNotes } from './decision-notes';
 import { Workbench } from './workbench';
 
@@ -16,7 +17,8 @@ export default function PricingPage() {
     <AppShell
       brand={<Brand subtitle="Operator" />}
       nav={PRICING_NAV}
-      barEnd={<ThemeToggle />}
+      barEnd={<OperatorBar />}
+      footer={<OperatorFooter />}
       title="Pricing & packaging"
       description="If we change this price, what happens to the customers we already have?"
       notice={

@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
-import { AppShell, AppShellMobileNav, ThemeToggle } from '@headroom/ui';
+import { AppShell, AppShellMobileNav } from '@headroom/ui';
 import { Brand } from '../_shell/brand';
 import { ACTIVATION_NAV } from '../_shell/nav';
+import { OperatorBar, OperatorFooter } from '../_shell/bar';
 import { ActivationWorkspace } from './workspace';
 import { ActivationNotes } from './decision-notes';
 
@@ -16,7 +17,8 @@ export default function ActivationPage() {
     <AppShell
       brand={<Brand subtitle="Operator" />}
       nav={ACTIVATION_NAV}
-      barEnd={<ThemeToggle />}
+      barEnd={<OperatorBar />}
+      footer={<OperatorFooter />}
       title="Activation"
       description="Are new customers reaching value, or just finishing our checklist?"
       notice={

@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
-import { AppShell, AppShellMobileNav, ThemeToggle } from '@headroom/ui';
+import { AppShell, AppShellMobileNav } from '@headroom/ui';
 import { Brand } from '../_shell/brand';
 import { OPERATOR_NAV } from '../_shell/nav';
+import { OperatorBar, OperatorFooter } from '../_shell/bar';
 import { Operator } from './operator';
 import { OperatorNotes } from './decision-notes';
 
@@ -16,7 +17,8 @@ export default function OperatorPage() {
     <AppShell
       brand={<Brand subtitle="Operator" />}
       nav={OPERATOR_NAV}
-      barEnd={<ThemeToggle />}
+      barEnd={<OperatorBar />}
+      footer={<OperatorFooter />}
       title="AI operator"
       description="Can AI do the synthesis without becoming something you cannot check?"
       notice={

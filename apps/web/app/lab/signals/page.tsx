@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
-import { AppShell, AppShellMobileNav, ThemeToggle } from '@headroom/ui';
+import { AppShell, AppShellMobileNav } from '@headroom/ui';
 import { Brand } from '../_shell/brand';
 import { SIGNALS_NAV } from '../_shell/nav';
+import { OperatorBar, OperatorFooter } from '../_shell/bar';
 import { Intelligence } from './intelligence';
 import { SignalNotes } from './decision-notes';
 
@@ -16,7 +17,8 @@ export default function SignalsPage() {
     <AppShell
       brand={<Brand subtitle="Operator" />}
       nav={SIGNALS_NAV}
-      barEnd={<ThemeToggle />}
+      barEnd={<OperatorBar />}
+      footer={<OperatorFooter />}
       title="Signals"
       description="What is happening inside these accounts, and which of it deserves attention today?"
       notice={
