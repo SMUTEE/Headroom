@@ -443,7 +443,9 @@ Segun's read that the page "didn't make sense" was correct and better aimed than
 
 117 tests. Also locked: no AI attribution anywhere in commits, code or repo (`~/.claude/CLAUDE.md`, global) — history was rewritten before the first push.
 
-**Still open:** Build 1 is not deployed and has no demo clip. `D-13` (collaboration artifact) remains parked behind the teardowns.
+**Still open:** `D-13` (collaboration artifact) remains parked behind the teardowns.
+
+**2026-10-09.** Build 4's costly signal shipped: the evaluation harness (`packages/eval`, capability note N-3) — ten frozen cases, six measures the schema cannot express, published at `/lab/operator/evals` with the failures left in. It has not been run against the model yet; the page says so rather than showing samples. Distribution moved out of planning into `DISTRIBUTION.md`: six stages, each gated, outbound at Stage 5 where `§8.3` says it actually converts. `D-07` is therefore now in execution rather than deferred.
 
 **2026-10-07 (d) — Build 1 shipped.** Commit `755825b`. Monetisation Lab live at `/lab/monetisation`. 105 tests; typecheck, lint, build clean.
 
