@@ -10,7 +10,8 @@
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r test",
     "check": "pnpm typecheck && pnpm lint && pnpm test",
-    "tokens": "pnpm --filter @headroom/ui tokens"
+    "tokens": "pnpm --filter @headroom/ui tokens",
+    "eval": "pnpm --filter @headroom/eval eval"
   },
   "packageManager": "pnpm@11.9.0",
   "engines": {

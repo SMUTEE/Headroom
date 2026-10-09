@@ -26,6 +26,7 @@ function operatorNav(current: string): NavGroup[] {
     items: [
       { label: 'Activation', href: '/lab/activation', current: current === 'activation' },
       { label: 'AI operator', href: '/lab/operator', current: current === 'operator' },
+      { label: 'Evaluation', href: '/lab/operator/evals', current: current === 'evals' },
       { label: 'Retention', available: false },
       { label: 'Audit log', available: false },
     ],
@@ -37,6 +38,7 @@ export const PRICING_NAV = operatorNav('pricing');
 export const ACTIVATION_NAV = operatorNav('activation');
 export const SIGNALS_NAV = operatorNav('signals');
 export const OPERATOR_NAV = operatorNav('operator');
+export const EVALS_NAV = operatorNav('evals');
 
 /** The customer-facing portal. A different product, so a different shell. */
 export const CUSTOMER_NAV: NavGroup[] = [

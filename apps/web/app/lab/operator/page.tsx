@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { AppShell, AppShellMobileNav } from '@headroom/ui';
+import Link from 'next/link';
 import { Brand } from '../_shell/brand';
 import { OPERATOR_NAV } from '../_shell/nav';
 import { OperatorBar, OperatorFooter } from '../_shell/bar';
@@ -35,6 +36,20 @@ export default function OperatorPage() {
     >
       <div className="flex flex-col gap-5">
         <Operator />
+        {/* The question anyone sensible asks after reading one assessment is
+            how it behaves on the ones designed to break it. */}
+        <div className="rounded-lg border border-border bg-surface px-4 py-3.5 sm:px-5">
+          <p className="max-w-prose text-body-sm text-text-secondary">
+            One assessment proves nothing on its own.{' '}
+            <Link
+              href="/lab/operator/evals"
+              className="text-accent-text underline underline-offset-4"
+            >
+              See how it behaves across ten cases built to break it
+            </Link>
+            , including the ones it gets wrong.
+          </p>
+        </div>
         <OperatorNotes />
       </div>
     </AppShell>
