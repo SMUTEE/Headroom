@@ -67,9 +67,11 @@ export function OperatorNotes() {
               from “the payment did not fail for a reason”.
             </li>
             <li>
-              24 eval cases run against outputs a model plausibly produces, including the wrong
-              ones: a fabricated citation, confident uncertainty, six forbidden actions. A guard
-              nobody has seen reject anything is not known to work.
+              The guards are tested against outputs a model plausibly produces, including the
+              wrong ones: a fabricated citation, confident uncertainty, six forbidden actions.
+              A guard nobody has seen reject anything is not known to work. Separately, ten
+              cases built to break the assessment run against the real model — those are the
+              evaluation, and its results are published with the failures left in.
             </li>
             <li>
               Saved demo assessments pass the same schema and the same grounding guard as live
@@ -84,8 +86,9 @@ export function OperatorNotes() {
         <h2 className="text-h3">What this does not prove</h2>
         <ul className="mt-4 flex max-w-3xl list-disc flex-col gap-2.5 pl-5 text-body-sm text-text-secondary">
           <li>
-            The eval set tests the guards, not the model. It says what happens when output is
-            wrong; it does not measure how often that is.
+            Ten cases is a small suite, and the same person wrote both the cases and the
+            prompt they probe. It is a floor, not a benchmark, and it measures behaviour on
+            cases chosen by its author rather than on anything real.
           </li>
           <li>
             Nothing here has been run against production data, and the assessments shown in the
