@@ -32,3 +32,4 @@ AGENTS.md
 
 # Eval plumbing check — not results
 evals/dry-run.md
+evals/dry-run.json

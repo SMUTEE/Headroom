@@ -10,3 +10,4 @@ export * from './cases';
 export * from './measures';
 export * from './score';
 export * from './report';
+export * from './providers';

@@ -65,9 +65,12 @@ past.
 **Goal:** nothing goes out until a stranger clicking the link has a good first
 ninety seconds.
 
-- [ ] **Run the eval.** `ANTHROPIC_API_KEY=… pnpm eval`, commit `evals/latest.json`.
-      Until this exists, the AI build's central claim is self-asserted and the
-      evaluation page says "no run has been published yet" to every visitor.
+- [ ] **Run the eval.** `pnpm eval` against a local model (free, no account —
+      see `packages/eval/README.md`), then commit the results. Until a run
+      exists, the AI build's central claim is self-asserted and the evaluation
+      page says "no run has been published yet" to every visitor.
+      A smaller model is the better run to publish first: it fails more, and
+      the failures are what Post 9 is built around.
 - [ ] **Update the case study.** It still opens "Three builds are finished" and
       has nothing on Build 4 or the portfolio layer. Also fix the stray
       `</section>` that orphans the fourth bug entry.

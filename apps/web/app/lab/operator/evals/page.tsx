@@ -7,7 +7,7 @@ import {
   Card,
   CardHeader,
   EmptyState,
-  Metric,
+
   Table,
   Td,
   Th,
@@ -17,7 +17,7 @@ import { EVAL_CASES } from '@headroom/eval';
 import { Brand } from '../../_shell/brand';
 import { EVALS_NAV } from '../../_shell/nav';
 import { OperatorBar, OperatorFooter } from '../../_shell/bar';
-import { loadRun } from './results';
+import { loadRuns } from './results';
 
 export const metadata: Metadata = {
   title: 'Evaluation',
@@ -37,7 +37,7 @@ export const metadata: Metadata = {
  * place to put a plausible-looking placeholder.
  */
 export default async function EvalsPage() {
-  const run = await loadRun();
+  const runs = await loadRuns();
 
   return (
     <AppShell
@@ -67,7 +67,11 @@ export default async function EvalsPage() {
           </div>
         </Card>
 
-        {run ? <Results run={run} /> : <NotRunYet />}
+        {runs.length > 0 ? (
+          runs.map((run) => <Results key={run.model} run={run} />)
+        ) : (
+          <NotRunYet />
+        )}
 
         <Card>
           <CardHeader headingLevel={2} title="The cases" description={`${EVAL_CASES.length} probes, each with a reason for being in the suite.`} />
@@ -103,39 +107,32 @@ function NotRunYet() {
         description="The harness is written and tested; these results come from calling the model, which needs an API key. Nothing is shown here until a real run is committed — sample results on this page in particular would be self-defeating."
       />
       <div className="border-t border-border-subtle px-4 py-3.5 sm:px-5">
-        <p className="text-metadata text-text-secondary">
+        <p className="max-w-prose text-metadata text-text-secondary">
           Run it with{' '}
-          <code className="rounded bg-neutral-3 px-1.5 py-0.5 text-text-primary">
-            ANTHROPIC_API_KEY=… pnpm eval
-          </code>
-          . Results are written to <code>evals/latest.json</code> and committed with the
-          failures included.
+          <code className="rounded bg-neutral-3 px-1.5 py-0.5 text-text-primary">pnpm eval</code>
+          , against a local model or any OpenAI-compatible endpoint. Results are written per
+          model and committed with the failures included.
         </p>
       </div>
     </Card>
   );
 }
 
-function Results({ run }: { run: NonNullable<Awaited<ReturnType<typeof loadRun>>> }) {
+function Results({ run }: { run: Awaited<ReturnType<typeof loadRuns>>[number] }) {
   const { summary } = run;
   const failed = run.results.filter((r) => !r.passed);
 
   return (
     <>
-      <div className="grid gap-4 sm:grid-cols-3">
-        <Card>
-          <Metric label="Cases passed" value={`${summary.passed} of ${summary.total}`} />
-        </Card>
-        <Card>
-          <Metric label="Model" value={run.model} />
-        </Card>
-        <Card>
-          <Metric label="Run" value={run.ranAt.slice(0, 10)} />
-        </Card>
+      <div className="border-t border-border pt-6">
+        <h2 className="text-h3">{run.model}</h2>
+        <p className="mt-1 text-metadata text-text-secondary">
+          {summary.passed} of {summary.total} cases passed · run {run.ranAt.slice(0, 10)}
+        </p>
       </div>
 
       <Card>
-        <CardHeader headingLevel={2} title="By measure" description="How often each property held across the ten cases." />
+        <CardHeader headingLevel={3} title="By measure" description="How often each property held across the ten cases." />
         <Table caption="Each scoring measure and how many of the ten cases it held on.">
           <thead>
             <Tr>
@@ -161,7 +158,7 @@ function Results({ run }: { run: NonNullable<Awaited<ReturnType<typeof loadRun>>
       </Card>
 
       <Card>
-        <CardHeader headingLevel={2} title="By case" />
+        <CardHeader headingLevel={3} title="By case" />
         <Table caption="Every case in the suite, with the health band and confidence the model returned.">
           <thead>
             <Tr>
@@ -193,7 +190,7 @@ function Results({ run }: { run: NonNullable<Awaited<ReturnType<typeof loadRun>>
       {failed.length > 0 ? (
         <Card>
           <CardHeader
-            headingLevel={2}
+            headingLevel={3}
             title="What failed"
             description="Left in deliberately. A harness that only ever publishes a clean sheet is not evidence of anything."
           />

@@ -1,38 +1,47 @@
 /**
- * Runs the suite against the model and writes the results.
+ * Runs the suite against a model and writes the results.
  *
- *     ANTHROPIC_API_KEY=... pnpm --filter @headroom/eval eval
+ *     pnpm eval                                  # local, free, no account
+ *     EVAL_PROVIDER=anthropic ANTHROPIC_API_KEY=… pnpm eval
+ *     EVAL_PROVIDER=openai-compatible EVAL_BASE_URL=… EVAL_API_KEY=… EVAL_MODEL=… pnpm eval
  *
- * The call here is deliberately identical to the one the application makes —
- * same prompt, same schema, same model. An eval that exercises a slightly
- * different request measures something the product does not do.
+ * Whatever the provider, the prompt, the schema and the guards are the ones
+ * the application uses. An eval that exercises a slightly different request
+ * measures something the product does not do.
  *
  * Results land in `evals/` as JSON the site reads and a markdown report for
- * reading in the repository. Both get committed, failures included.
+ * reading in the repository, keyed by model so runs accumulate rather than
+ * overwrite one another. Both get committed, failures included.
  */
 
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import Anthropic from '@anthropic-ai/sdk';
-import { zodOutputFormat } from '@anthropic-ai/sdk/helpers/zod';
-import { AccountAssessmentSchema, ASSESSMENT_SYSTEM_PROMPT } from '@headroom/domain';
+import { AccountAssessmentSchema } from '@headroom/domain';
 
 import { EVAL_CASES } from './cases';
+import { providerFromEnv, TransportError, type Provider } from './providers';
 import { buildRun, toMarkdown } from './report';
 import { scoreCase, scoreUnparseable, type CaseResult } from './score';
 
-const MODEL = 'claude-opus-5-5';
 const OUT_DIR = resolve(dirname(fileURLToPath(import.meta.url)), '../../../evals');
+
+/** A filename-safe form of a model id, so `qwen2.5:14b` is not a path. */
+function slug(model: string): string {
+  return model
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+}
 
 /**
  * A fixed stand-in response, used only by `--dry-run`.
  *
- * It is not a model output and is never written to `latest.json`. Its one job
- * is to prove the plumbing — the loop, the scoring, the files — before a run
- * that costs money. Reused unchanged across all ten cases, so it passes some
- * and fails others, which exercises both halves of the report.
+ * It is not a model output and is never written to a results file. Its one
+ * job is to prove the plumbing before a run that costs money or time. Reused
+ * unchanged across all ten cases, so it passes some and fails others, which
+ * exercises both halves of the report.
  */
 const STAND_IN = {
   summary: 'A fixed placeholder used to exercise the harness. No model produced this text.',
@@ -59,73 +68,80 @@ async function dryRun() {
   );
 }
 
-async function main() {
-  if (process.argv.includes('--dry-run')) {
-    await dryRun();
-    return;
-  }
-
-  if (!process.env.ANTHROPIC_API_KEY) {
-    console.error(
-      'ANTHROPIC_API_KEY is not set.\n\n' +
-        'This script calls the model and costs money, so it does not fall back to\n' +
-        'saved responses. A published result has to come from a real run.',
-    );
-    process.exitCode = 1;
-    return;
-  }
-
-  // One retry per case. A blip should not cost the whole run, and the SDK
-  // already retries the cases it considers retryable.
-  const anthropic = new Anthropic({ maxRetries: 3 });
+async function runSuite(provider: Provider) {
   const results: CaseResult[] = [];
   const transportErrors: string[] = [];
+
+  console.log(`Running ${EVAL_CASES.length} cases against ${provider.model}\n`);
 
   for (const [i, testCase] of EVAL_CASES.entries()) {
     process.stdout.write(`[${i + 1}/${EVAL_CASES.length}] ${testCase.title} … `);
     const startedAt = Date.now();
 
     try {
-      const message = await anthropic.messages.parse({
-        model: MODEL,
-        max_tokens: 4096,
-        system: ASSESSMENT_SYSTEM_PROMPT,
-        messages: [{ role: 'user', content: JSON.stringify(testCase.context, null, 2) }],
-        output_config: { format: zodOutputFormat(AccountAssessmentSchema) },
-      });
-
+      const { raw } = await provider.assess(testCase.context);
       const elapsed = Date.now() - startedAt;
-      const assessment = message.parsed_output;
 
-      if (!assessment) {
-        results.push(scoreUnparseable(testCase, 'The response did not fit the schema.'));
-        console.log('unparseable');
+      // One schema, every provider. A response that does not fit is a real
+      // result about that model and gets published as one.
+      const parsed = AccountAssessmentSchema.safeParse(raw);
+      if (!parsed.success) {
+        const first = parsed.error.issues[0];
+        results.push(
+          scoreUnparseable(
+            testCase,
+            first
+              ? `${first.path.join('.') || 'root'}: ${first.message}`
+              : 'Did not fit the schema.',
+          ),
+        );
+        console.log('did not fit the schema');
         continue;
       }
 
-      const scored = scoreCase(testCase, assessment, elapsed);
+      const scored = scoreCase(testCase, parsed.data, elapsed);
       results.push(scored);
       console.log(scored.passed ? 'pass' : 'FAIL');
     } catch (error) {
-      // A transport failure is not a model failure. Recording it as one would
-      // publish "0 of 10 passed" to a page about whether the model can be
-      // trusted, which is the most misleading thing this harness could do.
-      const detail = error instanceof Error ? error.message : String(error);
-      console.log('error');
-      transportErrors.push(`${testCase.title}: ${detail}`);
+      if (!(error instanceof TransportError)) throw error;
 
-      // A rejected key fails identically for all ten. Stopping here saves
-      // nine more round trips and nine repetitions of the same message.
-      if (error instanceof Anthropic.AuthenticationError) {
-        console.error('\nThe API key was rejected. Stopping without trying the rest.');
+      console.log('could not reach the model');
+      transportErrors.push(`${testCase.title}: ${error.message}`);
+
+      // A rejected key, or a local runtime that is not running, fails
+      // identically for all ten. Stopping saves nine more round trips and
+      // nine repetitions of the same message.
+      if (error.fatal) {
+        console.error('\nThis will fail for every case. Stopping.');
         break;
       }
     }
   }
 
+  return { results, transportErrors };
+}
+
+async function main() {
+  if (process.argv.includes('--dry-run')) {
+    await dryRun();
+    return;
+  }
+
+  let provider: Provider;
+  try {
+    provider = providerFromEnv();
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : String(error));
+    process.exitCode = 1;
+    return;
+  }
+
+  const { results, transportErrors } = await runSuite(provider);
+
   if (transportErrors.length > 0) {
-    // Nothing is written. A partial run is not a publishable result, and
-    // overwriting a good run with a half-finished one loses the only copy.
+    // Nothing is written. A partial run is not a publishable result, and a
+    // network failure recorded as a model failure would be the single most
+    // misleading thing this harness could produce.
     console.error(
       `\n${transportErrors.length} of ${EVAL_CASES.length} cases could not reach the model:\n` +
         transportErrors.map((e) => `  - ${e}`).join('\n') +
@@ -135,15 +151,16 @@ async function main() {
     return;
   }
 
-  const run = buildRun(results, MODEL, 'live');
+  const run = buildRun(results, provider.model, 'live');
 
   await mkdir(OUT_DIR, { recursive: true });
-  await writeFile(resolve(OUT_DIR, 'latest.json'), `${JSON.stringify(run, null, 2)}\n`);
-  await writeFile(resolve(OUT_DIR, 'REPORT.md'), toMarkdown(run));
+  const name = slug(provider.model);
+  await writeFile(resolve(OUT_DIR, `${name}.json`), `${JSON.stringify(run, null, 2)}\n`);
+  await writeFile(resolve(OUT_DIR, `${name}.md`), toMarkdown(run));
 
   console.log(
     `\n${run.summary.passed}/${run.summary.total} cases passed. ` +
-      `Written to evals/latest.json and evals/REPORT.md`,
+      `Written to evals/${name}.json and evals/${name}.md`,
   );
 
   // A failing case is information, not a broken build. The point of
