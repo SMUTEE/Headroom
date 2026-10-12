@@ -75,8 +75,11 @@ async function main() {
     return;
   }
 
-  const anthropic = new Anthropic();
+  // One retry per case. A blip should not cost the whole run, and the SDK
+  // already retries the cases it considers retryable.
+  const anthropic = new Anthropic({ maxRetries: 3 });
   const results: CaseResult[] = [];
+  const transportErrors: string[] = [];
 
   for (const [i, testCase] of EVAL_CASES.entries()) {
     process.stdout.write(`[${i + 1}/${EVAL_CASES.length}] ${testCase.title} … `);
@@ -104,12 +107,32 @@ async function main() {
       results.push(scored);
       console.log(scored.passed ? 'pass' : 'FAIL');
     } catch (error) {
-      // A transport failure is not a model failure, and recording it as one
-      // would understate the model in the published table.
+      // A transport failure is not a model failure. Recording it as one would
+      // publish "0 of 10 passed" to a page about whether the model can be
+      // trusted, which is the most misleading thing this harness could do.
       const detail = error instanceof Error ? error.message : String(error);
-      console.log(`error — ${detail}`);
-      results.push(scoreUnparseable(testCase, `Request failed: ${detail}`));
+      console.log('error');
+      transportErrors.push(`${testCase.title}: ${detail}`);
+
+      // A rejected key fails identically for all ten. Stopping here saves
+      // nine more round trips and nine repetitions of the same message.
+      if (error instanceof Anthropic.AuthenticationError) {
+        console.error('\nThe API key was rejected. Stopping without trying the rest.');
+        break;
+      }
     }
+  }
+
+  if (transportErrors.length > 0) {
+    // Nothing is written. A partial run is not a publishable result, and
+    // overwriting a good run with a half-finished one loses the only copy.
+    console.error(
+      `\n${transportErrors.length} of ${EVAL_CASES.length} cases could not reach the model:\n` +
+        transportErrors.map((e) => `  - ${e}`).join('\n') +
+        '\n\nNothing was written. Fix the cause and run it again.',
+    );
+    process.exitCode = 1;
+    return;
   }
 
   const run = buildRun(results, MODEL, 'live');
